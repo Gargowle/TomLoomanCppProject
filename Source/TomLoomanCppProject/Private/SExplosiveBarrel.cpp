@@ -20,24 +20,23 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	RadialForce->SetupAttachment(RootComponent);
 	RadialForce->ImpulseStrength = 2000;
 	RadialForce->Radius = 600;
+	// less physical accurate (ignores mass)
 	RadialForce->bImpulseVelChange = true;
-	RadialForce->ForceStrength = 10;
+	// remove small radial force that sually would be applied in component tick
+	RadialForce->SetAutoActivate(false);
 
-	StaticMesh->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::Explode);
-	
-	//StaticMesh->OnComponentHit
 }
 
 // Called when the game starts or when spawned
-void ASExplosiveBarrel::BeginPlay()
+void ASExplosiveBarrel::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	// error if parent function is not called
+	Super::PostInitializeComponents();
 
-	
-	
+	StaticMesh->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::OnActorHit);
 }
 
-void ASExplosiveBarrel::Explode(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	RadialForce->FireImpulse();
 }

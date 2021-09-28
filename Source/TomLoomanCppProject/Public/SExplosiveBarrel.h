@@ -20,16 +20,17 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
-		UStaticMeshComponent* StaticMesh;
+	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(VisibleAnywhere)
 	URadialForceComponent* RadialForce;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	// Called just before BeginPlay
+	virtual void PostInitializeComponents() override;
 
+	// Must be marked with ufunction in order to "bind" the event: expose to Unreal's property system
 	UFUNCTION()
-	void Explode(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 
 public:	
