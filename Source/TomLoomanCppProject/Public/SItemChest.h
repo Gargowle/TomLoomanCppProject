@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* BaseMesh;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) // BlueprintReadOnly such that we can set the relative rotation in the BP
 	UStaticMeshComponent* LidMesh;
 
 	// Called when the game starts or when spawned

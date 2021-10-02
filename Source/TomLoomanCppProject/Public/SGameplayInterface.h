@@ -23,6 +23,6 @@ class TOMLOOMANCPPPROJECT_API ISGameplayInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	UFUNCTION(BlueprintNativeEvent) //Expose to Blueprints (enable blueprint only classes, but also C++).
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable) //Expose to implementing in BPs (enable BP only classes, but also C++). Also make it possible to call it in BP
 	void Interact(APawn* InstigatorPawn);
 };
