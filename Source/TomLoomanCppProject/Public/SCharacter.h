@@ -23,12 +23,15 @@ public:
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> PrimaryProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> SecondaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
-	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_Attack;
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
@@ -39,15 +42,19 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent* InteractionComp;
 
+	DECLARE_DELEGATE_OneParam(FProjectileDelegate, TSubclassOf<AActor>);
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// Methods bound to input
 	void MoveForward(float Value);
 	void MoveRight(float Value);
-	void PrimaryAttack();
-	void PrimaryAttack_TimeElapsed();
 	void PrimaryInteract();
+	void Attack(TSubclassOf<AActor> ProjectileClass);
+	UFUNCTION() // must be declared UFUNCTION for being delegated to the timer delegate
+	void Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass);
+	void Teleport();
 
 public:	
 	// Called every frame

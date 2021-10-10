@@ -63,8 +63,8 @@ void ASCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// -- Rotation Visualization -- //
-	const float DrawScale = 100.0f;
-	const float Thickness = 5.0f;
+	constexpr float DrawScale = 100.0f;
+	constexpr float Thickness = 5.0f;
 
 	FVector LineStart = GetActorLocation();
 	// Offset to the right of pawn
@@ -90,40 +90,12 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction<FProjectileDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::Attack, PrimaryProjectileClass);
+	PlayerInputComponent->BindAction<FProjectileDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::Attack, SecondaryProjectileClass);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 
-}
-void ASCharacter::PrimaryAttack()
-{
-	PlayAnimMontage(AttackAnim);
-	
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.17f);
-
-	// If we were to clear this timer in order for it not to go off (for example: when player dies), this is how you would do it:
-	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
-
-}
-
-void ASCharacter::PrimaryAttack_TimeElapsed()
-{
-	if (ensure(ProjectileClass))
-	{
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-
-		//TM = Transform Matrix
-		// Spawn at the location of the Muzzle_01 location into the direction of the view
-		FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		// add the information on who shot this projectile
-		SpawnParams.Instigator = this;
-
-		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-	}
 }
 
 void ASCharacter::PrimaryInteract()
@@ -134,3 +106,59 @@ void ASCharacter::PrimaryInteract()
 		InteractionComp->PrimaryInteract();
 	}
 }
+
+void ASCharacter::Attack(TSubclassOf<AActor> ProjectileClass)
+{
+	PlayAnimMontage(AttackAnim);
+	
+	FTimerDelegate TimerDel;
+	TimerDel.BindUFunction(this, FName("Attack_TimeElapsed"), ProjectileClass);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.17f, /*looping*/ false);
+
+	// If we were to clear this timer in order for it not to go off (for example: when player dies), this is how you would do it:
+	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
+
+}
+
+void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
+{
+	if (ensure(ProjectileClass))
+	{	
+		// Line Trace for finding out the projectile launch rotation
+		// This is done by line tracing the camera forward vector for finding the location that the crosshair is aiming at
+		FCollisionObjectQueryParams ObjectQueryParams;
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic); // TODO: find out how to do "All object types
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+
+		FHitResult AttackTargetHitResult;
+
+		constexpr float LineTraceLength = 100000.0f; // 100 meter
+
+		FVector CameraPosition = CameraComp->GetComponentLocation();
+		FVector LineTraceEnd = CameraPosition + GetControlRotation().Vector() * LineTraceLength;
+
+		bool bHitSuccessful = GetWorld()->LineTraceSingleByObjectType(AttackTargetHitResult, CameraPosition, LineTraceEnd, ObjectQueryParams);
+
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+		FRotator RotationFromLineTrace = ((bHitSuccessful ? AttackTargetHitResult.Location : LineTraceEnd) - HandLocation).Rotation();
+
+		//TM = Transform Matrix
+		// Spawn at the location of the Muzzle_01 location into the yielded by the line trace
+		FTransform SpawnTM = FTransform(RotationFromLineTrace, HandLocation);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		// add the information on who shot this projectile
+		SpawnParams.Instigator = this;
+
+		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	}
+}
+
+void ASCharacter::Teleport()
+{
+}
+
