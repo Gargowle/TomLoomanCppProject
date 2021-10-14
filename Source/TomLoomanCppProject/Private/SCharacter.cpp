@@ -92,6 +92,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction<FProjectileDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::Attack, PrimaryProjectileClass);
 	PlayerInputComponent->BindAction<FProjectileDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::Attack, SecondaryProjectileClass);
+	PlayerInputComponent->BindAction<FProjectileDelegate>("TeleportAttack", IE_Pressed, this, &ASCharacter::Attack, TeleportProjectileClass);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
@@ -156,9 +157,5 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 	}
-}
-
-void ASCharacter::Teleport()
-{
 }
 

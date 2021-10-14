@@ -29,6 +29,9 @@ protected:
 	TSubclassOf<AActor> SecondaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> TeleportProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
 	FTimerHandle TimerHandle_Attack;
@@ -54,7 +57,6 @@ protected:
 	void Attack(TSubclassOf<AActor> ProjectileClass);
 	UFUNCTION() // must be declared UFUNCTION for being delegated to the timer delegate
 	void Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass);
-	void Teleport();
 
 public:	
 	// Called every frame
