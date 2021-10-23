@@ -132,18 +132,21 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 		// Line Trace for finding out the projectile launch rotation
 		// This is done by line tracing the camera forward vector for finding the location that the crosshair is aiming at
 		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic); // TODO: find out how to do "All object types
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 		ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
 
+		FCollisionQueryParams CollisionQueryParams;
+		CollisionQueryParams.AddIgnoredActor(this);
+
 		FHitResult AttackTargetHitResult;
 
-		constexpr float LineTraceLength = 100000.0f; // 100 meter
+		constexpr float LineTraceLength = 100000.0f; // 1000 meter
 
 		FVector CameraPosition = CameraComp->GetComponentLocation();
 		FVector LineTraceEnd = CameraPosition + GetControlRotation().Vector() * LineTraceLength;
 
-		bool bHitSuccessful = GetWorld()->LineTraceSingleByObjectType(AttackTargetHitResult, CameraPosition, LineTraceEnd, ObjectQueryParams);
+		bool bHitSuccessful = GetWorld()->LineTraceSingleByObjectType(AttackTargetHitResult, CameraPosition, LineTraceEnd, ObjectQueryParams, CollisionQueryParams);
 
 		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 

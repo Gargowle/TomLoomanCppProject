@@ -3,7 +3,6 @@
 
 #include "STeleportProjectile.h"
 
-#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -35,9 +34,12 @@ void ASTeleportProjectile::Explode_Implementation()
 
 void ASTeleportProjectile::TeleportInstigator()
 {
-	const FVector TeleportLocation = GetActorLocation();
-	GetInstigator()->GetRootComponent()->SetWorldLocation(TeleportLocation);
-	K2_DestroyActor();
+	AActor* ActorToTeleport = GetInstigator();
+	if (ensure(ActorToTeleport))
+	{
+		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation());
+	}
+	Destroy();
 }
 
 void ASTeleportProjectile::StartTeleportation()
