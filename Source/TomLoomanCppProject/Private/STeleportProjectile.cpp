@@ -14,25 +14,23 @@ void ASTeleportProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &ASTeleportProjectile::StartTeleportation, ProjectileFlightTime);
+	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &ASTeleportProjectile::Explode, ProjectileFlightTime);
 }
 
-void ASTeleportProjectile::PostInitializeComponents()
+void ASTeleportProjectile::Explode_Implementation()
 {
-	Super::PostInitializeComponents();
-	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	SphereComp->OnComponentHit.AddDynamic(this, &ASTeleportProjectile::OnActorHit);
-}
+	// make sure that this method is not triggered twice by accident
+	GetWorldTimerManager().ClearTimer(TimerHandle_Teleport);
 
-void ASTeleportProjectile::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (!MovementComp->IsVelocityUnderSimulationThreshold())
-	{
-		MovementComp->StopMovementImmediately();
-		GetWorldTimerManager().ClearTimer(TimerHandle_Teleport);
-		StartTeleportation();
-		
-	}
+	// some necessary duplicated lines again since we will not call the Super
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+	EffectComp->DeactivateSystem();
+
+	MovementComp->StopMovementImmediately();
+	SetActorEnableCollision(false);
+
+	StartTeleportation();
 }
 
 void ASTeleportProjectile::TeleportInstigator()
@@ -44,10 +42,5 @@ void ASTeleportProjectile::TeleportInstigator()
 
 void ASTeleportProjectile::StartTeleportation()
 {
-	if(ensure(PortalEmitter))
-	{
-		EffectComp->SetTemplate(PortalEmitter);
-	}
-	MovementComp->StopMovementImmediately();
 	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &ASTeleportProjectile::TeleportInstigator, PortalOpenDelay);
 }
