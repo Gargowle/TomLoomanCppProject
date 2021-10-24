@@ -12,9 +12,13 @@ ASTargetDummy::ASTargetDummy()
 	RootComponent = MeshComp;
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
+}
+
+void ASTargetDummy::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASTargetDummy::OnHealthChanged);
-
 }
 
 void ASTargetDummy::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
