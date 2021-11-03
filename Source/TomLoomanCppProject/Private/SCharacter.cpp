@@ -51,10 +51,14 @@ void ASCharacter::PostInitializeComponents()
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
-	if(NewHealth <= 0.0f && Delta < 0.0f)
+	if(Delta < 0.0f)
 	{
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		DisableInput(PC);
+		if (NewHealth <= 0.0f)
+		{
+			APlayerController* PC = Cast<APlayerController>(GetController());
+			DisableInput(PC);
+		}
+		GetMesh()->SetScalarParameterValueOnMaterials(TEXT("HitFlashTimeToHit"), GetWorld()->TimeSeconds);
 	}
 }
 
