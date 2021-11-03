@@ -11,14 +11,14 @@ USAttributeComponent::USAttributeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-
-	Health = 100;
+	HealthMax = 100.0f;
+	Health = HealthMax;
 }
 
 bool USAttributeComponent::ApplyHealthChange(float Delta)
 {
-	Health += Delta;
-
+	Health = FMath::Clamp((Health+Delta), 0.0f, HealthMax);
+	
 	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
 
 	return true;
