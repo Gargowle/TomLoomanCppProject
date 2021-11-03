@@ -3,10 +3,12 @@
 
 #include "SProjectileBase.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -37,6 +39,9 @@ ASProjectileBase::ASProjectileBase()
 
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(SphereComp);
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
+	AudioComp->SetupAttachment(SphereComp);
 
 }
 
@@ -70,6 +75,10 @@ void ASProjectileBase::Explode_Implementation()
 
 		MovementComp->StopMovementImmediately();
 		SetActorEnableCollision(false);
+
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+
+		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0.0f, 2000.0f);
 
 		Destroy();
 	}

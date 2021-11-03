@@ -11,6 +11,7 @@ class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
+class UParticleSystem;
 
 UCLASS()
 class TOMLOOMANCPPPROJECT_API ASCharacter : public ACharacter
@@ -34,6 +35,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UParticleSystem* AttackVFX;
 
 	FTimerHandle TimerHandle_Attack;
 

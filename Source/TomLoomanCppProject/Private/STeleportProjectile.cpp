@@ -7,6 +7,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 // Called when the game starts or when spawned
 void ASTeleportProjectile::BeginPlay()
@@ -28,6 +29,8 @@ void ASTeleportProjectile::Explode_Implementation()
 
 	MovementComp->StopMovementImmediately();
 	SetActorEnableCollision(false);
+
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
 	StartTeleportation();
 }

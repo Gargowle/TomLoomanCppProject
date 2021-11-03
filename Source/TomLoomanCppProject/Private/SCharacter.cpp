@@ -9,6 +9,7 @@
 #include "SAttributeComponent.h"
 // for drawing
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -177,6 +178,8 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 		SpawnParams.Instigator = this;
 
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+
+		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), TEXT("Muzzle_01"));
 	}
 }
 

@@ -9,6 +9,9 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class UAudioComponent;
+class USoundCue;
+class UCameraShakeBase;
 
 UCLASS(ABSTRACT)
 class TOMLOOMANCPPPROJECT_API ASProjectileBase : public AActor
@@ -30,9 +33,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Particles")
 	UParticleSystemComponent* EffectComp;
 
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	UAudioComponent* AudioComp;
+
 	UPROPERTY(EditAnywhere, Category = "Particles")
 	UParticleSystem* ImpactVFX;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundCue* ImpactSound;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShakeBase> CameraShake;
+		
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
