@@ -15,6 +15,11 @@ USAttributeComponent::USAttributeComponent()
 	Health = HealthMax;
 }
 
+bool USAttributeComponent::IsFullLife()
+{
+	return Health >= HealthMax;
+}
+
 bool USAttributeComponent::ApplyHealthChange(float Delta)
 {
 	Health = FMath::Clamp((Health+Delta), 0.0f, HealthMax);

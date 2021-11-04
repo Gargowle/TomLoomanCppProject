@@ -17,6 +17,8 @@ public:
 	// Sets default values for this component's properties
 	USAttributeComponent();
 
+	bool IsFullLife();
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
