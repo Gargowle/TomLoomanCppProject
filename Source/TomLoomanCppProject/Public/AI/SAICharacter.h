@@ -7,6 +7,7 @@
 #include "SAICharacter.generated.h"
 
 
+class USAttributeComponent;
 class UPawnSensingComponent;
 
 UCLASS()
@@ -21,6 +22,9 @@ public:
 protected:
 
 	virtual void PostInitializeComponents() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USAttributeComponent* AttributeComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
