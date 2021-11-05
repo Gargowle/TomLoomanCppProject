@@ -21,8 +21,8 @@ void ASPowerUp::Interact_Implementation(APawn* InstigatorPawn)
 	if (IsInstigatorEligible(InstigatorPawn))
 	{
 		ApplyEffect(InstigatorPawn);
-		MeshComp->SetVisibility(false);
-		MeshComp->SetCollisionProfileName(TEXT("NoCollision"));
+		RootComponent->SetVisibility(false, true);
+		SetActorEnableCollision(false);
 		FTimerHandle TimerHandle_Respawn;
 		GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASPowerUp::Respawn, SecondsToRespawn);
 	}
@@ -30,8 +30,8 @@ void ASPowerUp::Interact_Implementation(APawn* InstigatorPawn)
 
 void ASPowerUp::Respawn()
 {
-	MeshComp->SetCollisionProfileName(TEXT("PowerUp"));
-	MeshComp->SetVisibility(true);
+	SetActorEnableCollision(true);
+	RootComponent->SetVisibility(true, true);
 }
 
 // Called when the game starts or when spawned

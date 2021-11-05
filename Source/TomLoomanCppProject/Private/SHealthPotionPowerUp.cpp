@@ -23,7 +23,7 @@ bool ASHealthPotionPowerUp::IsInstigatorEligible(APawn* InstigatorPawn)
 	if (AttributeComp)
 	{
 		// if instigator has full health, the instigator is not eligible for the health potion
-		return AttributeComp->IsFullLife() ? false : true;
+		return AttributeComp->IsFullHealth() ? false : true;
 	}
 	return false;
 

@@ -17,7 +17,7 @@ public:
 	// Sets default values for this component's properties
 	USAttributeComponent();
 
-	bool IsFullLife();
+	bool IsFullHealth();
 
 protected:
 

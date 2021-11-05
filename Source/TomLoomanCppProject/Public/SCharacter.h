@@ -24,6 +24,13 @@ public:
 
 protected:
 
+	// VisibleAnywhere: read only such that it is visible in Editor but not editable
+	UPROPERTY(VisibleAnywhere, Category = "Attack")
+	FName TimeToHitParamName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Attack")
+	FName HandSocketName;
+
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> PrimaryProjectileClass;
 

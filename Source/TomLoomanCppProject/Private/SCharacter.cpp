@@ -34,6 +34,9 @@ ASCharacter::ASCharacter()
 
 	// disable "strafing" but instead make the character turn into the direction of movement
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	TimeToHitParamName = TEXT("HitFlashTimeToHit");
+	HandSocketName = TEXT("Muzzle_01");
 }
 
 // Called when the game starts or when spawned
@@ -58,7 +61,7 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			DisableInput(PC);
 		}
-		GetMesh()->SetScalarParameterValueOnMaterials(TEXT("HitFlashTimeToHit"), GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 	}
 }
 
@@ -168,7 +171,7 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 
 		bool bHitSuccessful = GetWorld()->LineTraceSingleByObjectType(AttackTargetHitResult, CameraPosition, LineTraceEnd, ObjectQueryParams, CollisionQueryParams);
 
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		FRotator RotationFromLineTrace = ((bHitSuccessful ? AttackTargetHitResult.Location : LineTraceEnd) - HandLocation).Rotation();
 
@@ -183,7 +186,7 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
-		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), TEXT("Muzzle_01"));
+		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), HandSocketName);
 	}
 }
 

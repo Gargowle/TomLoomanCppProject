@@ -43,6 +43,9 @@ ASProjectileBase::ASProjectileBase()
 	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 	AudioComp->SetupAttachment(SphereComp);
 
+	ImpactShakeInnerRadius = 0.0f;
+	ImpactShakeOuterRadius = 2000.0f;
+
 }
 
 void ASProjectileBase::PostInitializeComponents()
@@ -78,7 +81,7 @@ void ASProjectileBase::Explode_Implementation()
 
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
-		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0.0f, 2000.0f);
+		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
 
 		Destroy();
 	}
