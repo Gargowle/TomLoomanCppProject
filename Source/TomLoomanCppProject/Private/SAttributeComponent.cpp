@@ -21,6 +21,30 @@ bool USAttributeComponent::IsFullHealth()
 }
 
 bool USAttributeComponent::ApplyHealthChange(float Delta)
+USAttributeComponent* USAttributeComponent::GetAttributes(AActor* FromActor)
+{
+	// check if nullptr, because as this is a public static function we have no idea who is going to call this
+	if(FromActor)
+	{
+		// TODO: future potential to make this more efficient in how the component is found.
+		// However, only one place in the code needs to be edited (this place) in order to update it everywhere this is used.
+		return Cast<USAttributeComponent>(FromActor->GetComponentByClass(USAttributeComponent::StaticClass()));		
+	}
+
+	return nullptr;
+}
+
+bool USAttributeComponent::IsActorAlive(AActor* FromActor)
+{
+	USAttributeComponent* AttributeComp = GetAttributes(FromActor);
+	if(AttributeComp) // no ensure because not clear how caller might intend to use this method
+	{
+		return AttributeComp->IsAlive();
+	}
+
+	return false;
+}
+
 {
 	const float OldHealth = Health;
 

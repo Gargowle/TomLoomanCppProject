@@ -13,13 +13,13 @@ ASHealthPotionPowerUp::ASHealthPotionPowerUp()
 void ASHealthPotionPowerUp::ApplyEffect(APawn* InstigatorPawn)
 {
 	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
-	AttributeComp->ApplyHealthChange(HealingAmount);
+	AttributeComp->ApplyHealthChange(this, HealingAmount);
 }
 
 bool ASHealthPotionPowerUp::IsInstigatorEligible(APawn* InstigatorPawn)
 {
 	// instigator pawn must have the attribute component
-	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(InstigatorPawn);
 	if (AttributeComp)
 	{
 		// if instigator has full health, the instigator is not eligible for the health potion
