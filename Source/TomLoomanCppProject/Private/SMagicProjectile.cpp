@@ -5,11 +5,9 @@
 
 #include "SAttributeComponent.h"
 
-// Called when the game starts or when spawned
-void ASMagicProjectile::BeginPlay()
+ASMagicProjectile::ASMagicProjectile()
 {
-	Super::BeginPlay();
-	
+	DamageAmount = 50.0f;
 }
 
 void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -19,7 +17,7 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
 		if(AttributeComp)
 		{
-			AttributeComp->ApplyHealthChange(-20.0f);
+			AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
 		}
 
 		Explode();

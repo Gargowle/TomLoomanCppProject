@@ -20,7 +20,6 @@ bool USAttributeComponent::IsFullHealth()
 	return Health >= HealthMax;
 }
 
-bool USAttributeComponent::ApplyHealthChange(float Delta)
 USAttributeComponent* USAttributeComponent::GetAttributes(AActor* FromActor)
 {
 	// check if nullptr, because as this is a public static function we have no idea who is going to call this
@@ -45,13 +44,14 @@ bool USAttributeComponent::IsActorAlive(AActor* FromActor)
 	return false;
 }
 
+bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	const float OldHealth = Health;
 
 	Health = FMath::Clamp((Health+Delta), 0.0f, HealthMax);
 
 	const float ActualDelta = Health - OldHealth;	
-	OnHealthChanged.Broadcast(nullptr, this, Health, ActualDelta);
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
 	return ActualDelta != 0.0f;
 }
