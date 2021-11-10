@@ -29,6 +29,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
 
+	// VisibleAnywhere: read only such that it is visible in Editor but not editable
+	UPROPERTY(VisibleAnywhere, Category = "Attack")
+	FName TimeToHitParamName;
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 

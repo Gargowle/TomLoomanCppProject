@@ -17,6 +17,8 @@ ASAICharacter::ASAICharacter()
 
 	// by default this is just set to PlacedInWorld which leads to spawned AI characters not being possessed
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	TimeToHitParamName = TEXT("HitFlashTimeToHit");
 }
 
 void ASAICharacter::PostInitializeComponents()
@@ -37,6 +39,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 {
 	if (Delta < 0.0f)
 	{
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+
 		if(InstigatorActor != this) // does not (yet?) check if instigator might be a team mate / fellow AI character
 		{
 			SetTargetActor(InstigatorActor);
