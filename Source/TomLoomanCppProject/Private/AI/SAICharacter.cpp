@@ -7,7 +7,9 @@
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
 #include "SAttributeComponent.h"
+#include "SWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Perception/PawnSensingComponent.h"
 
 ASAICharacter::ASAICharacter()
@@ -39,13 +41,27 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 {
 	if (Delta < 0.0f)
 	{
+		// play hit flash
 		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 
+		// set target to the actor that caused this damage
 		if(InstigatorActor != this) // does not (yet?) check if instigator might be a team mate / fellow AI character
 		{
 			SetTargetActor(InstigatorActor);
 		}
 
+		// Add health bar to screen
+		if (ActiveHealthBar == nullptr)
+		{
+			ActiveHealthBar = CreateWidget<USWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
+			if(ActiveHealthBar)
+			{
+				ActiveHealthBar->AttachedActor = this;
+				ActiveHealthBar->AddToViewport(); // here the construct event is triggered
+			}
+		}
+
+		// die
 		if (NewHealth <= 0.0f)
 		{
 			// Stop Behavior Tree
