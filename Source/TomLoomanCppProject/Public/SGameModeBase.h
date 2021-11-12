@@ -17,9 +17,14 @@ class TOMLOOMANCPPPROJECT_API ASGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+public:
+
 	ASGameModeBase();
 
 	virtual void StartPlay() override;
+
+	UFUNCTION(Exec)
+	void KillAll();
 
 protected:
 

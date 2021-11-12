@@ -50,8 +50,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			SetTargetActor(InstigatorActor);
 		}
 
-		// Add health bar to screen
-		if (ActiveHealthBar == nullptr)
+		// Add health bar to screen if it not exists yet and the character does not die immediately
+		if (ActiveHealthBar == nullptr && NewHealth > 0)
 		{
 			ActiveHealthBar = CreateWidget<USWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
 			if(ActiveHealthBar)
