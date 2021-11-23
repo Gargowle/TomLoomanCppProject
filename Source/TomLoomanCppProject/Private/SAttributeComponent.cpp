@@ -69,3 +69,13 @@ bool USAttributeComponent::Kill(AActor* InstigatorActor)
 {
 	return ApplyHealthChange(InstigatorActor, -HealthMax);
 }
+
+float USAttributeComponent::GetHealth()
+{
+	return Health;
+}
+
+bool USAttributeComponent::ApplyFullHealth(AActor* InstigatorActor)
+{
+	return ApplyHealthChange(InstigatorActor, HealthMax);
+}
