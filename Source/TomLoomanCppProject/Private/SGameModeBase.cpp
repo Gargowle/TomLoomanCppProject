@@ -10,6 +10,10 @@
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
+static TAutoConsoleVariable<bool> CVarDrawDebugSphereOnBotSpawn(TEXT("su.DrawDebugSphereOnBotSpawn"), false, TEXT("Enable debug spheres at spawn location."), ECVF_Cheat);
+
 ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
@@ -37,6 +41,11 @@ void ASGameModeBase::KillAll()
 
 void ASGameModeBase::SpawnBotTimerElapsed()
 {
+	if(!CVarSpawnBots.GetValueOnGameThread())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
+		return;
+	}
 	// check if full bot capacity is reached already. If reached, return before query is actually made
 	int32 NrOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
@@ -89,7 +98,12 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
 
 		// Track all the used spawn locations
-		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 16, FColor::Blue, false,  60.0f);
+		if(CVarDrawDebugSphereOnBotSpawn.GetValueOnGameThread())
+		{
+			DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 16, FColor::Blue, false, 60.0f);
+		}
+	}
+}
 
 void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {

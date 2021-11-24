@@ -12,6 +12,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Perception/PawnSensingComponent.h"
 
+static TAutoConsoleVariable<bool> CVarDebugDrawAIStrings(TEXT("su.DebugDrawAIStrings"), false, TEXT("Enable debug strings drawn when AI spots player "), ECVF_Cheat);
+
 ASAICharacter::ASAICharacter()
 {
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
@@ -34,7 +36,10 @@ void ASAICharacter::PostInitializeComponents()
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
 	SetTargetActor(Pawn);
-	DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
+	if(CVarDebugDrawAIStrings.GetValueOnGameThread())
+	{
+		DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
+	}
 }
 
 void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,	float Delta)
