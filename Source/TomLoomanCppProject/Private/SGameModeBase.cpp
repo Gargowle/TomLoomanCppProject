@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
+#include "SCharacter.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 
@@ -89,5 +90,29 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 
 		// Track all the used spawn locations
 		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 16, FColor::Blue, false,  60.0f);
+
+void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
+{
+	ASCharacter* Player = Cast <ASCharacter>(VictimActor);
+	if (Player)
+	{
+		FTimerHandle TimerHandle_Respawn;
+
+		FTimerDelegate Delegate_Respawn;
+		Delegate_Respawn.BindUFunction(this, TEXT("RespawnPlayerElapsed"), Player->GetController());
+
+		float RespawnDelay = 2.0f;
+		GetWorldTimerManager().SetTimer(TimerHandle_Respawn, Delegate_Respawn, RespawnDelay, false);
+	}
+	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
+}
+
+void ASGameModeBase::RespawnPlayerElapsed(AController* Controller)
+{
+	if(ensure(Controller))
+	{
+		Controller->UnPossess();
+
+		RestartPlayer(Controller);
 	}
 }

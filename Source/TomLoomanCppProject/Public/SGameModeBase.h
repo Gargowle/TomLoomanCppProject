@@ -25,6 +25,8 @@ public:
 
 	UFUNCTION(Exec)
 	void KillAll();
+	
+	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
 
 protected:
 
@@ -47,4 +49,7 @@ protected:
 
 	UFUNCTION()
 	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	UFUNCTION()
+	void RespawnPlayerElapsed(AController* Controller);
 };
