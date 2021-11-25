@@ -78,6 +78,8 @@ protected:
 	UFUNCTION() // must be declared UFUNCTION for being delegated to the timer delegate
 	void Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass);
 
+	virtual FVector GetPawnViewLocation() const override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

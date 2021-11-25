@@ -200,3 +200,8 @@ void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 	}
 }
 
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
+}
+
