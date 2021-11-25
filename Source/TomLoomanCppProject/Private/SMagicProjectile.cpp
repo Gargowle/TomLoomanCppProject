@@ -3,7 +3,8 @@
 
 #include "SMagicProjectile.h"
 
-#include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ASMagicProjectile::ASMagicProjectile()
 {
@@ -14,12 +15,7 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 {
 	if(OtherActor && OtherActor != GetInstigator())
 	{
-		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
-		if(AttributeComp)
-		{
-			AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
-		}
-
+		USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, Hit);
 		Explode();
 	}
 }

@@ -10,7 +10,9 @@
 #include "SWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CapsuleComponent.h"
 #include "Perception/PawnSensingComponent.h"
+#include "Gameframework/CharacterMovementComponent.h"
 
 static TAutoConsoleVariable<bool> CVarDebugDrawAIStrings(TEXT("su.DebugDrawAIStrings"), false, TEXT("Enable debug strings drawn when AI spots player "), ECVF_Cheat);
 
@@ -23,6 +25,11 @@ ASAICharacter::ASAICharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	TimeToHitParamName = TEXT("HitFlashTimeToHit");
+
+	// for projectiles to be able to hit the mesh such that directional damage can be applied at the right point
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	// for interacting with projectiles that work via overlap (not hit)
+	GetMesh()->SetGenerateOverlapEvents(true);
 }
 
 void ASAICharacter::PostInitializeComponents()
@@ -80,6 +87,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 			
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->DisableMovement();
 
 			// destroy in 10 seconds
 			SetLifeSpan(10.0f);
