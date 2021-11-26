@@ -12,6 +12,7 @@ class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
 class UParticleSystem;
+class USActionComponent;
 
 UCLASS()
 class TOMLOOMANCPPPROJECT_API ASCharacter : public ACharacter
@@ -59,6 +60,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
 
 	DECLARE_DELEGATE_OneParam(FProjectileDelegate, TSubclassOf<AActor>);
 

@@ -7,9 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SInteractionComponent.h"
 #include "SAttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "SActionComponent.h"
 // for drawing
 #include "DrawDebugHelpers.h"
-#include "Kismet/GameplayStatics.h"
 
 static TAutoConsoleVariable<bool> CVarDebugDrawMovementArrows(TEXT("su.DebugDrawMovementArrow"), false, TEXT("Enable debug arrows for movement and input direction."), ECVF_Cheat);
 
@@ -30,6 +31,8 @@ ASCharacter::ASCharacter()
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComponent");
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
 	// Use "Action RPG style camera" in which camera can be rotated independently of the character's direction
 	bUseControllerRotationYaw = false;
