@@ -77,6 +77,8 @@ protected:
 	// Methods bound to input
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	void SprintStart();
+	void SprintStop();
 	void PrimaryInteract();
 	void Attack(TSubclassOf<AActor> ProjectileClass);
 	UFUNCTION() // must be declared UFUNCTION for being delegated to the timer delegate

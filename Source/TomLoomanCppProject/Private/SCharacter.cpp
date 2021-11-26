@@ -88,6 +88,16 @@ void ASCharacter::MoveRight(float Value)
 	AddMovementInput(RightVector, Value);
 }
 
+void ASCharacter::SprintStart()
+{
+	ActionComp->StartActionByName(this, TEXT("Sprint"));
+}
+
+void ASCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this, TEXT("Sprint"));
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
@@ -130,6 +140,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
 
 }
 
