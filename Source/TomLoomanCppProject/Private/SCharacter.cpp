@@ -41,14 +41,6 @@ ASCharacter::ASCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	TimeToHitParamName = TEXT("HitFlashTimeToHit");
-	HandSocketName = TEXT("Muzzle_01");
-}
-
-// Called when the game starts or when spawned
-void ASCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -134,9 +126,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction<FProjectileDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::Attack, PrimaryProjectileClass);
-	PlayerInputComponent->BindAction<FProjectileDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::Attack, SecondaryProjectileClass);
-	PlayerInputComponent->BindAction<FProjectileDelegate>("TeleportAttack", IE_Pressed, this, &ASCharacter::Attack, TeleportProjectileClass);
+	PlayerInputComponent->BindAction<FAttackActionNameDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::Attack, FName("PrimaryAttack"));
+	PlayerInputComponent->BindAction<FAttackActionNameDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::Attack, FName("Blackhole"));
+	PlayerInputComponent->BindAction<FAttackActionNameDelegate>("TeleportAttack", IE_Pressed, this, &ASCharacter::Attack, FName("Teleport"));
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
@@ -160,60 +152,9 @@ void ASCharacter::PrimaryInteract()
 	}
 }
 
-void ASCharacter::Attack(TSubclassOf<AActor> ProjectileClass)
+void ASCharacter::Attack(FName ActionName)
 {
-	PlayAnimMontage(AttackAnim);
-	
-	FTimerDelegate TimerDel;
-	TimerDel.BindUFunction(this, FName("Attack_TimeElapsed"), ProjectileClass);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.17f, /*looping*/ false);
-
-	// If we were to clear this timer in order for it not to go off (for example: when player dies), this is how you would do it:
-	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
-
-}
-
-void ASCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
-{
-	if (ensure(ProjectileClass))
-	{	
-		// Line Trace for finding out the projectile launch rotation
-		// This is done by line tracing the camera forward vector for finding the location that the crosshair is aiming at
-		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-
-		FCollisionQueryParams CollisionQueryParams;
-		CollisionQueryParams.AddIgnoredActor(this);
-
-		FHitResult AttackTargetHitResult;
-
-		constexpr float LineTraceLength = 100000.0f; // 1000 meter
-
-		FVector CameraPosition = CameraComp->GetComponentLocation();
-		FVector LineTraceEnd = CameraPosition + GetControlRotation().Vector() * LineTraceLength;
-
-		bool bHitSuccessful = GetWorld()->LineTraceSingleByObjectType(AttackTargetHitResult, CameraPosition, LineTraceEnd, ObjectQueryParams, CollisionQueryParams);
-
-		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
-
-		FRotator RotationFromLineTrace = ((bHitSuccessful ? AttackTargetHitResult.Location : LineTraceEnd) - HandLocation).Rotation();
-
-		//TM = Transform Matrix
-		// Spawn at the location of the Muzzle_01 location into the yielded by the line trace
-		FTransform SpawnTM = FTransform(RotationFromLineTrace, HandLocation);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		// add the information on who shot this projectile
-		SpawnParams.Instigator = this;
-
-		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-
-		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), HandSocketName);
-	}
+	ActionComp->StartActionByName(this, ActionName);
 }
 
 FVector ASCharacter::GetPawnViewLocation() const

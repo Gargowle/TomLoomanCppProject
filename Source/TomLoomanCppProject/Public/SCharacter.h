@@ -9,9 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
-class UAnimMontage;
 class USAttributeComponent;
-class UParticleSystem;
 class USActionComponent;
 
 UCLASS()
@@ -28,27 +26,7 @@ protected:
 	// VisibleAnywhere: read only such that it is visible in Editor but not editable
 	UPROPERTY(VisibleAnywhere, Category = "Attack")
 	FName TimeToHitParamName;
-
-	UPROPERTY(VisibleAnywhere, Category = "Attack")
-	FName HandSocketName;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> PrimaryProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> SecondaryProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> TeleportProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UParticleSystem* AttackVFX;
-
-	FTimerHandle TimerHandle_Attack;
-
+	
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 
@@ -64,10 +42,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USActionComponent* ActionComp;
 
-	DECLARE_DELEGATE_OneParam(FProjectileDelegate, TSubclassOf<AActor>);
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	DECLARE_DELEGATE_OneParam(FAttackActionNameDelegate, FName);
 
 	virtual void PostInitializeComponents() override;
 
@@ -80,11 +55,7 @@ protected:
 	void SprintStart();
 	void SprintStop();
 	void PrimaryInteract();
-	void Attack(TSubclassOf<AActor> ProjectileClass);
-	UFUNCTION() // must be declared UFUNCTION for being delegated to the timer delegate
-	void Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass);
-
-	virtual FVector GetPawnViewLocation() const override;
+	void Attack(FName ActionName);
 
 public:	
 	// Called every frame
@@ -96,4 +67,5 @@ public:
 	UFUNCTION(Exec)
 	void HealSelf(float Amount = 100.0f);
 
+	virtual FVector GetPawnViewLocation() const override;
 };
