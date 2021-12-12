@@ -6,6 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "SAction.generated.h"
 
+class UWorld;
+
 /**
  * 
  */
@@ -22,7 +24,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StopAction(AActor* Instigator);
 
-	// Action nicname to start/stop without a reference to the object
+	// Action nickname to start/stop without a reference to the object
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	FName ActionName;
+
+	virtual UWorld* GetWorld() const override;
 };
