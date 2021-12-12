@@ -29,8 +29,12 @@ public:
 
 protected:
 
+	// mark as UPROPERTY such that it is known to Unreals memory management system
 	UPROPERTY()
 	TArray<USAction*> Actions;
+
+	UPROPERTY(EditAnywhere, Category = "Actions")
+	TArray<TSubclassOf<USAction>> DefaultActions;
 	
 	virtual void BeginPlay() override;
 
