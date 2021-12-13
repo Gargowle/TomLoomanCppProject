@@ -8,7 +8,7 @@ public class TomLoomanCppProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG", "CoreUObject" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG", "CoreUObject", "GameplayTags" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
