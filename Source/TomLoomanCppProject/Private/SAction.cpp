@@ -11,14 +11,21 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 	// use outer instead of instigator because instigator could be anything while the tags should be managed for the executor of the action
 	USActionComponent* OwningComp = GetOwningComponent();
 	OwningComp->ActiveGameplayTags.AppendTags(GrantsTags);
+
+	bIsRunning = true;
 }
 
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
 	UE_LOG(LogTemp, Log, TEXT("Stopping: %s"), *GetNameSafe(this));
 
+	// if StopAction is called even though the action is not running, there is a serious problem that needs to be dealt with immediately
+	ensureAlways(bIsRunning);
+
 	USActionComponent* OwningComp = GetOwningComponent();
 	OwningComp->ActiveGameplayTags.RemoveTags(GrantsTags);
+
+	bIsRunning = false;
 }
 
 UWorld* USAction::GetWorld() const
@@ -33,8 +40,25 @@ UWorld* USAction::GetWorld() const
 	return nullptr;
 }
 
+bool USAction::CanStart_Implementation(AActor* Instigator)
+{
+	if(IsRunning())
+	{
+		return false;
+	}
+
+	USActionComponent* OwningComp = GetOwningComponent();
+
+	return !OwningComp->ActiveGameplayTags.HasAny(BlockedTags);
+}
+
 USActionComponent* USAction::GetOwningComponent() const
 {
 	// cast must succeed because Outer is set to USActionComponent explicitly in the AddAction method of the USActionComponent
 	return Cast<USActionComponent>(GetOuter());
+}
+
+bool USAction::IsRunning() const
+{
+	return bIsRunning;
 }
