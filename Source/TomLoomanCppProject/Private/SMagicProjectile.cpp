@@ -3,6 +3,8 @@
 
 #include "SMagicProjectile.h"
 
+#include "GameplayTagContainer.h"
+#include "SActionComponent.h"
 #include "SGameplayFunctionLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -13,11 +15,22 @@ ASMagicProjectile::ASMagicProjectile()
 
 }
 
-void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(OtherActor && OtherActor != GetInstigator())
 	{
-		USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, Hit);
+
+		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
+		if(ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			// Deflect projectile
+			MovementComp->Velocity *= -1.0;
+
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
+
+		USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult);
 		Explode();
 	}
 }

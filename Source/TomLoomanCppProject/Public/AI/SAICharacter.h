@@ -7,6 +7,7 @@
 #include "SAICharacter.generated.h"
 
 
+class USActionComponent;
 class USAttributeComponent;
 class UPawnSensingComponent;
 class UUserWidget;
@@ -24,9 +25,12 @@ public:
 protected:
 
 	virtual void PostInitializeComponents() override;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;

@@ -52,7 +52,7 @@ void ASProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASProjectileBase::OnActorOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +61,7 @@ void ASProjectileBase::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ASProjectileBase::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
 	Explode();
