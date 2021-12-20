@@ -41,7 +41,7 @@ protected:
 
 	FTimerHandle TimerHandle_SpawnBots;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ai")
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimerInterval;
 
 	UFUNCTION()
@@ -52,4 +52,7 @@ protected:
 
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameSettings")
+	int CreditsPerKill;
 };

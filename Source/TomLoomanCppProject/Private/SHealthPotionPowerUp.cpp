@@ -4,10 +4,12 @@
 #include "SHealthPotionPowerUp.h"
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
+#include "SPlayerState.h"
 
 ASHealthPotionPowerUp::ASHealthPotionPowerUp()
 {
 	HealingAmount = 50.0f;
+	CreditCosts = 20;
 }
 
 void ASHealthPotionPowerUp::ApplyEffect(APawn* InstigatorPawn)
@@ -18,12 +20,20 @@ void ASHealthPotionPowerUp::ApplyEffect(APawn* InstigatorPawn)
 
 bool ASHealthPotionPowerUp::IsInstigatorEligible(APawn* InstigatorPawn)
 {
-	// instigator pawn must have the attribute component
+	// instigator pawn must have the attribute component and the used player state must be ASPlayerstate
 	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(InstigatorPawn);
-	if (AttributeComp)
+	ASPlayerState* PlayerState = Cast<ASPlayerState>(InstigatorPawn->GetPlayerState());
+
+	if (AttributeComp && ensureMsgf(PlayerState, TEXT("This framework needs the ASPlayerState class to be used. However, some other class has been chosen.")))
 	{
 		// if instigator has full health, the instigator is not eligible for the health potion
-		return AttributeComp->IsFullHealth() ? false : true;
+		// instigator must have enough credits
+		if(!AttributeComp->IsFullHealth() && PlayerState->GetCredits() >= CreditCosts)
+		{
+			// if all conditions fullfilled, pay price and return true
+			PlayerState->AddCredits(this, -CreditCosts);
+			return true;
+		}
 	}
 	return false;
 

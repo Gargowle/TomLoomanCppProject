@@ -4,28 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "SPowerUp.h"
-#include "SHealthPotionPowerUp.generated.h"
+#include "SCreditPowerUp.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TOMLOOMANCPPPROJECT_API ASHealthPotionPowerUp : public ASPowerUp
+class TOMLOOMANCPPPROJECT_API ASCreditPowerUp : public ASPowerUp
 {
 	GENERATED_BODY()
 
-	ASHealthPotionPowerUp();
+	ASCreditPowerUp();
 
 protected:
-
+	
 	UPROPERTY(EditAnywhere)
-	float HealingAmount;
-
-	UPROPERTY(EditAnywhere)
-	int CreditCosts;
+	int CreditsToAdd;
 	
 	virtual void ApplyEffect(APawn* InstigatorPawn) override;
 
-	virtual bool IsInstigatorEligible(APawn * InstigatorPawn) override;
-	
+	virtual bool IsInstigatorEligible(APawn* InstigatorPawn) override;
 };

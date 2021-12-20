@@ -7,6 +7,7 @@
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
+#include "SPlayerState.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 
@@ -17,6 +18,7 @@ static TAutoConsoleVariable<bool> CVarDrawDebugSphereOnBotSpawn(TEXT("su.DrawDeb
 ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
+	CreditsPerKill = 5;
 }
 
 void ASGameModeBase::StartPlay()
@@ -107,18 +109,34 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 
 void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
-	ASCharacter* Player = Cast <ASCharacter>(VictimActor);
-	if (Player)
+	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
+
+	// if player is killed
+	ASCharacter* VictimPlayer = Cast <ASCharacter>(VictimActor);
+	if (VictimPlayer)
 	{
 		FTimerHandle TimerHandle_Respawn;
 
 		FTimerDelegate Delegate_Respawn;
-		Delegate_Respawn.BindUFunction(this, TEXT("RespawnPlayerElapsed"), Player->GetController());
+		Delegate_Respawn.BindUFunction(this, TEXT("RespawnPlayerElapsed"), VictimPlayer->GetController());
 
 		float RespawnDelay = 2.0f;
 		GetWorldTimerManager().SetTimer(TimerHandle_Respawn, Delegate_Respawn, RespawnDelay, false);
+
+		return;
 	}
-	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
+
+	// if anyone killed by player
+	ASCharacter* KillerPlayer = Cast <ASCharacter>(Killer);
+	if(KillerPlayer)
+	{
+		ASPlayerState* KillerPlayerState = Cast<ASPlayerState>(KillerPlayer->GetPlayerState());
+		if(ensureMsgf(KillerPlayerState, TEXT("This framework needs the ASPlayerState class to be used. However, some other class has been chosen.")))
+		{
+			KillerPlayerState->AddCredits(VictimActor, CreditsPerKill);
+		}
+	}
+
 }
 
 void ASGameModeBase::RespawnPlayerElapsed(AController* Controller)
