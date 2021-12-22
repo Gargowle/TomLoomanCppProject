@@ -19,6 +19,7 @@ ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
 	CreditsPerKill = 5;
+	NrOfCoinsToSpawnAtGameStart = 4;
 }
 
 void ASGameModeBase::StartPlay()
@@ -26,6 +27,13 @@ void ASGameModeBase::StartPlay()
 	Super::StartPlay();
 
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+
+	// spawn coins in level
+	UEnvQueryInstanceBlueprintWrapper* CoinSpawnQueryInstance = UEnvQueryManager::RunEQSQuery(this, CoinPlacementAtGameStartQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
+	if(ensure(CoinSpawnQueryInstance))
+	{
+		CoinSpawnQueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnSpawnCoinsQueryCompleted);
+	}
 }
 
 void ASGameModeBase::KillAll()
@@ -79,12 +87,12 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 
 	if(ensure(QueryInstance))
 	{
-		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnQueryCompleted);
+		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnSpawnBotQueryCompleted);
 	}	
 		
 }
 
-void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+void ASGameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
 	
 	if(QueryStatus != EEnvQueryStatus::Success)
@@ -93,7 +101,8 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 		return;
 	}
 
-	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+	TArray<FVector> Locations;
+	QueryInstance->GetQueryResultsAsLocations(Locations);
 
 	if(Locations.IsValidIndex(0))
 	{
@@ -146,5 +155,33 @@ void ASGameModeBase::RespawnPlayerElapsed(AController* Controller)
 		Controller->UnPossess();
 
 		RestartPlayer(Controller);
+	}
+}
+
+void ASGameModeBase::OnSpawnCoinsQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+{
+	if(QueryStatus != EEnvQueryStatus::Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spawn coin at game start EQS Query has failed!"));
+		return;		
+	}
+
+	TArray<FVector> Locations;
+	QueryInstance->GetQueryResultsAsLocations(Locations);
+
+	FVector HeightOffset = FVector::ZeroVector;
+	HeightOffset.Z = 50;
+
+	for(int Index = 0; Index < NrOfCoinsToSpawnAtGameStart; ++Index)
+	{
+		if(Locations.IsValidIndex(Index))
+		{
+
+			GetWorld()->SpawnActor<AActor>(CoinClass, Locations[Index] + HeightOffset, FRotator::ZeroRotator);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Spawn coin EQS could only deliver %i of %i requested legitimate spawn points"), Index, NrOfCoinsToSpawnAtGameStart);
+		}
 	}
 }

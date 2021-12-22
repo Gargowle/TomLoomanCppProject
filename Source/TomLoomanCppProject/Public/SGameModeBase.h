@@ -48,11 +48,23 @@ protected:
 	void SpawnBotTimerElapsed();
 
 	UFUNCTION()
-	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+	void OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);
 
 	UPROPERTY(EditDefaultsOnly, Category = "GameSettings")
 	int CreditsPerKill;
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameSettings")
+	UEnvQuery* CoinPlacementAtGameStartQuery;
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameSettings")
+	int NrOfCoinsToSpawnAtGameStart;
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameSettings")
+	TSubclassOf<AActor> CoinClass;
+
+	UFUNCTION()
+	void OnSpawnCoinsQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 };
