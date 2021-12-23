@@ -22,7 +22,7 @@ bool ASHealthPotionPowerUp::IsInstigatorEligible(APawn* InstigatorPawn)
 {
 	// instigator pawn must have the attribute component and the used player state must be ASPlayerstate
 	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(InstigatorPawn);
-	ASPlayerState* PlayerState = Cast<ASPlayerState>(InstigatorPawn->GetPlayerState());
+	ASPlayerState* PlayerState = InstigatorPawn->GetPlayerState<ASPlayerState>();
 
 	if (AttributeComp && ensureMsgf(PlayerState, TEXT("This framework needs the ASPlayerState class to be used. However, some other class has been chosen.")))
 	{

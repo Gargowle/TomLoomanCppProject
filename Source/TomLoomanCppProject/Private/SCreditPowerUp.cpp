@@ -11,7 +11,7 @@ ASCreditPowerUp::ASCreditPowerUp()
 
 void ASCreditPowerUp::ApplyEffect(APawn* InstigatorPawn)
 {
-	ASPlayerState * InstigatorPlayerState = Cast<ASPlayerState>(InstigatorPawn->GetPlayerState());
+	ASPlayerState * InstigatorPlayerState = InstigatorPawn->GetPlayerState<ASPlayerState>();
 
 	InstigatorPlayerState->AddCredits(InstigatorPawn, CreditsToAdd);
 }

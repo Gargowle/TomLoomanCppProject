@@ -20,6 +20,8 @@ ASGameModeBase::ASGameModeBase()
 	SpawnTimerInterval = 2.0f;
 	CreditsPerKill = 5;
 	NrOfCoinsToSpawnAtGameStart = 4;
+
+	PlayerStateClass = ASPlayerState::StaticClass();
 }
 
 void ASGameModeBase::StartPlay()
@@ -139,7 +141,7 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	ASCharacter* KillerPlayer = Cast <ASCharacter>(Killer);
 	if(KillerPlayer)
 	{
-		ASPlayerState* KillerPlayerState = Cast<ASPlayerState>(KillerPlayer->GetPlayerState());
+		ASPlayerState* KillerPlayerState = KillerPlayer->GetPlayerState<ASPlayerState>();
 		if(ensureMsgf(KillerPlayerState, TEXT("This framework needs the ASPlayerState class to be used. However, some other class has been chosen.")))
 		{
 			KillerPlayerState->AddCredits(VictimActor, CreditsPerKill);
