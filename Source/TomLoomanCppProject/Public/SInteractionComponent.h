@@ -7,6 +7,7 @@
 #include "SInteractionComponent.generated.h"
 
 
+class USWorldUserWidget;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TOMLOOMANCPPPROJECT_API USInteractionComponent : public UActorComponent
 {
@@ -24,9 +25,29 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+	void FindBestInteractable();
+
+	UPROPERTY() // mark as UPROPERTY to clear the pointer in case the actor gets deleted
+	AActor* FocusedActor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<USWorldUserWidget> DefaultWidgetClass;
+
+	UPROPERTY()
+	USWorldUserWidget* DefaultWidgetInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	float TraceDistance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	float TraceRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Trace")
+	TEnumAsByte<ECollisionChannel> CollisionChannel;
+
+public:
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
 };

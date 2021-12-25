@@ -4,6 +4,7 @@
 #include "SInteractionComponent.h"
 #include "SGameplayInterface.h"
 #include "DrawDebugHelpers.h"
+#include "SWorldUserWidget.h"
 
 static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("su.InteractionDebugDraw"), false, TEXT("Enable debug lines for InteractionComponent."), ECVF_Cheat);
 
@@ -14,7 +15,10 @@ USInteractionComponent::USInteractionComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	TraceRadius = 30.0f;
+	TraceDistance = 1000.0f;
+
+	CollisionChannel = ECC_WorldDynamic;
 }
 
 
@@ -27,21 +31,21 @@ void USInteractionComponent::BeginPlay()
 	
 }
 
-
 // Called every frame
 void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	FindBestInteractable();
 }
 
-void USInteractionComponent::PrimaryInteract()
+
+void USInteractionComponent::FindBestInteractable()
 {
 	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
 
 	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(CollisionChannel);
 
 	AActor* MyOwner = GetOwner();
 
@@ -51,25 +55,24 @@ void USInteractionComponent::PrimaryInteract()
 	// TODO: in the future get some more accurate information
 	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	FVector End = EyeLocation + (EyeRotation.Vector() * 1000);
+	FVector End = EyeLocation + (EyeRotation.Vector() * TraceDistance);
 
-
-	
 	// linetrace and raycast are synonymous
 	// Very precise linetrace; probably too precise for gamepad use
 	//FHitResult Hit;
 	//bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);
 
 	TArray<FHitResult> Hits;
-
-	float Radius = 30.0f;
-
+	
 	FCollisionShape Shape;
-	Shape.SetSphere(Radius);
+	Shape.SetSphere(TraceRadius);
 
 	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, End, FQuat::Identity, ObjectQueryParams, Shape);
 
 	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+
+	// clear reference before trying to fill
+	FocusedActor = nullptr;
 
 	for (FHitResult Hit : Hits)
 	{
@@ -81,21 +84,43 @@ void USInteractionComponent::PrimaryInteract()
 			// QUIRK: check if U... is implemented, but lateron actually use I...
 			if (HitActor->Implements<USGameplayInterface>())
 			{
-				// MyOwner is Actor but this function expects a Pawn
-				// This cast is safe: No null checking, typetracking, ... necessary; Tom Looman: "it will just continue"
-				// TODO: find out what "it will just continue" means
-				APawn* MyPawn = Cast<APawn>(MyOwner);
-			
-				// Boilerplate Unreal magic with regards to the function that must be executed here
-				ISGameplayInterface::Execute_Interact(HitActor, MyPawn);
-				const int Segments = 32;
-				if(bDebugDraw)
+				if (bDebugDraw)
 				{
-					DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, Segments, LineColor, false, 2.0f);					
+					const int Segments = 32;
+					DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, Segments, LineColor, false, 2.0f);
 				}
+
+				FocusedActor = HitActor;
 				break;
 			}
-			
+
+		}
+	}
+
+	if(FocusedActor)
+	{
+		if (!DefaultWidgetInstance && ensure(DefaultWidgetClass))
+		{
+			DefaultWidgetInstance = CreateWidget<USWorldUserWidget>(GetWorld(), DefaultWidgetClass);			
+		}
+
+		if(DefaultWidgetClass)
+		{
+			DefaultWidgetInstance->AttachedActor = FocusedActor;
+
+			// check because otherwise AddToViewport complains if it is already in viewport (which could happen because not every time this code is run the widget is newly created)
+			if(!DefaultWidgetInstance->IsInViewport())
+			{
+				DefaultWidgetInstance->AddToViewport();				
+			}
+		}
+
+	}
+	else
+	{
+		if(DefaultWidgetInstance)
+		{
+			DefaultWidgetInstance->RemoveFromParent();
 		}
 	}
 
@@ -103,4 +128,19 @@ void USInteractionComponent::PrimaryInteract()
 	{
 		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f);		
 	}
+}
+
+
+void USInteractionComponent::PrimaryInteract()
+{
+	if(FocusedActor == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("No Focus Actor to Interact"));
+		return;
+	}
+	// MyOwner is Actor but this function expects a Pawn
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+
+	// Boilerplate Unreal magic with regards to the function that must be executed here
+	ISGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
 }
