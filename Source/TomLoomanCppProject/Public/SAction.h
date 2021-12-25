@@ -20,6 +20,10 @@ class TOMLOOMANCPPPROJECT_API USAction : public UObject
 
 public:
 
+	/* Start immediately when added to an action component */
+	UPROPERTY(EditDefaultsOnly, Category = "Action")
+	bool bAutoStart;
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StartAction(AActor* Instigator);
 
