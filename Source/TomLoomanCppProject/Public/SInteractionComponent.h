@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Trace")
 	TEnumAsByte<ECollisionChannel> CollisionChannel;
 
+	UFUNCTION(Reliable, Server)
+	void ServerInteract(AActor* InFocus);
+
 public:
 
 	// Called every frame

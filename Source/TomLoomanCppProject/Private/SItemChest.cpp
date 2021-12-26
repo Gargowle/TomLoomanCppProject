@@ -3,6 +3,7 @@
 
 #include "SItemChest.h"
 #include "Components/StaticMeshComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 
@@ -19,24 +20,29 @@ ASItemChest::ASItemChest()
 	LidMesh->SetupAttachment(RootComponent);
 
 	TargetPitch = 110.0;
+
+	bReplicates = true;
+
+	bLidOpened = false;
 }
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMesh->SetRelativeRotation(FRotator(TargetPitch, 0, 0));
+	bLidOpened = !bLidOpened;
+	OnRep_LidOpened();
 }
 
-// Called when the game starts or when spawned
-void ASItemChest::BeginPlay()
+void ASItemChest::OnRep_LidOpened()
 {
-	Super::BeginPlay();
-	
+	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
+	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
 }
 
-// Called every frame
-void ASItemChest::Tick(float DeltaTime)
+void ASItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::Tick(DeltaTime);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	// Whenever bLidOpened changed on the server, send it to all clients (no other logic involved)
+	// (other options for example: only replicate to owner of a weapon, ...)
+	DOREPLIFETIME(ASItemChest, bLidOpened);
 }
-

@@ -36,7 +36,11 @@ void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FindBestInteractable();
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if(MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();		
+	}
 }
 
 
@@ -133,7 +137,12 @@ void USInteractionComponent::FindBestInteractable()
 
 void USInteractionComponent::PrimaryInteract()
 {
-	if(FocusedActor == nullptr)
+	ServerInteract(FocusedActor);
+}
+
+void USInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
+{
+	if (InFocus == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("No Focus Actor to Interact"));
 		return;
@@ -142,5 +151,5 @@ void USInteractionComponent::PrimaryInteract()
 	APawn* MyPawn = Cast<APawn>(GetOwner());
 
 	// Boilerplate Unreal magic with regards to the function that must be executed here
-	ISGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
+	ISGameplayInterface::Execute_Interact(InFocus, MyPawn);
 }

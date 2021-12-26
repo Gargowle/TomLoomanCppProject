@@ -27,17 +27,17 @@ public:
 	ASItemChest();
 
 protected:
+
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly) //ReplicatedUsing is the same as RepNotify in BP
+	bool bLidOpened;
+
+	UFUNCTION()
+	void OnRep_LidOpened();
+
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly) // BlueprintReadOnly such that we can set the relative rotation in the BP
 	UStaticMeshComponent* LidMesh;
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };
