@@ -31,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StopActionByName(AActor* Instigator, FName ActionName);
 
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+	bool HasAction(TSubclassOf<USAction> ActionClass);
+
 	// Sets default values for this component's properties
 	USActionComponent();
 

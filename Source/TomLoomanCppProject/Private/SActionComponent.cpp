@@ -92,3 +92,15 @@ bool USActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 	return false;
 }
 
+bool USActionComponent::HasAction(TSubclassOf<USAction> ActionClass)
+{
+	for (USAction* Action : Actions)
+	{
+		if (Action && Action->IsA(ActionClass))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
