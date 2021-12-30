@@ -44,6 +44,13 @@ protected:
 
 	USWorldUserWidget* ActiveHealthBar;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> PlayerSpottedWidgetClass;
+
+	USWorldUserWidget* PlayerSpottedWidget;
+
+	FTimerHandle PlayerSpottedTimerHandle;
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 

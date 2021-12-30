@@ -44,10 +44,33 @@ void ASAICharacter::PostInitializeComponents()
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	SetTargetActor(Pawn);
-	if(CVarDebugDrawAIStrings.GetValueOnGameThread())
+	AAIController* AIC = Cast<AAIController>(GetController());
+
+	if (AIC)
 	{
-		DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
+		AActor* PreviousTargetActor = Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+
+		if(PreviousTargetActor != Pawn)
+		{
+			SetTargetActor(Pawn);
+			if (CVarDebugDrawAIStrings.GetValueOnGameThread())
+			{
+				DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
+			}
+			// Add player spotted Widget to screen if it does not exist yet
+			if (PlayerSpottedWidget == nullptr)
+			{
+				PlayerSpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+				PlayerSpottedWidget->AttachedActor = this;
+			}
+			PlayerSpottedWidget->AddToViewport();
+
+			// do not clear timer before setting it such that if minion sees two targets after each other
+			// the duration is just as long as it would see one target
+
+			// set timer to remove widget after some time again
+			GetWorldTimerManager().SetTimer(PlayerSpottedTimerHandle, PlayerSpottedWidget, &UUserWidget::RemoveFromParent, 3.0);
+		}
 	}
 }
 
