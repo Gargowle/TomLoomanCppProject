@@ -44,37 +44,32 @@ void ASAICharacter::PostInitializeComponents()
 
 void ASAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	AAIController* AIC = Cast<AAIController>(GetController());
-
-	if (AIC)
+	if(GetTargetActor() != Pawn)
 	{
-		AActor* PreviousTargetActor = Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-
-		if(PreviousTargetActor != Pawn)
+		SetTargetActor(Pawn);
+		if (CVarDebugDrawAIStrings.GetValueOnGameThread())
 		{
-			SetTargetActor(Pawn);
-			if (CVarDebugDrawAIStrings.GetValueOnGameThread())
-			{
-				DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
-			}
-			// Add player spotted Widget to screen if it does not exist yet
-			if (PlayerSpottedWidget == nullptr)
-			{
-				PlayerSpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
-				PlayerSpottedWidget->AttachedActor = this;
-			}
-			PlayerSpottedWidget->AddToViewport();
-
-			// do not clear timer before setting it such that if minion sees two targets after each other
-			// the duration is just as long as it would see one target
-
-			// set timer to remove widget after some time again
-			GetWorldTimerManager().SetTimer(PlayerSpottedTimerHandle, PlayerSpottedWidget, &UUserWidget::RemoveFromParent, 3.0);
+			DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
 		}
+		// Add player spotted Widget to screen if it does not exist yet
+		if (PlayerSpottedWidget == nullptr)
+		{
+			PlayerSpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+			PlayerSpottedWidget->AttachedActor = this;
+		}
+
+		// ZOrder > 0 in order to be above the health bar (in case that the minion has a health bar already)
+		PlayerSpottedWidget->AddToViewport(1);
+
+		// do not clear timer before setting it such that if minion sees two targets after each other
+		// the duration is just as long as it would see one target
+
+		// set timer to remove widget after some time again
+		GetWorldTimerManager().SetTimer(PlayerSpottedTimerHandle, PlayerSpottedWidget, &UUserWidget::RemoveFromParent, 3.0);
 	}
 }
 
-void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,	float Delta)
+void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue,	float Delta)
 {
 	if (Delta < 0.0f)
 	{
@@ -88,7 +83,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		}
 
 		// Add health bar to screen if it not exists yet and the character does not die immediately
-		if (ActiveHealthBar == nullptr && NewHealth > 0)
+		if (ActiveHealthBar == nullptr && NewValue > 0)
 		{
 			ActiveHealthBar = CreateWidget<USWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
 			if(ActiveHealthBar)
@@ -99,7 +94,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		}
 
 		// die
-		if (NewHealth <= 0.0f)
+		if (NewValue <= 0.0f)
 		{
 			// Stop Behavior Tree
 			AAIController* AIC = Cast<AAIController>(GetController());
@@ -127,7 +122,19 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 
 	if (AIC)
 	{
-		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+		AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
 	}
+}
+
+AActor* ASAICharacter::GetTargetActor() const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
+	}
+
+	return nullptr;
 }
 

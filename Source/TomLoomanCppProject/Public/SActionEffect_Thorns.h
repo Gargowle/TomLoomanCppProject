@@ -27,7 +27,7 @@ public:
 protected:
 
 	UFUNCTION() // declared UFUNCTION in order to bind to USAttributeComponent's OnHealthChanged
-	void ApplyThornDamage(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void ApplyThornDamage(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float ThornsFactor;

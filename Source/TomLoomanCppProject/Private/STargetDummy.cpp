@@ -21,7 +21,7 @@ void ASTargetDummy::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddUniqueDynamic(this, &ASTargetDummy::OnHealthChanged);
 }
 
-void ASTargetDummy::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
+void ASTargetDummy::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta)
 {
 	if(Delta < 0.0f)
 	{

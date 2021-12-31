@@ -13,7 +13,7 @@ class UPawnSensingComponent;
 class UUserWidget;
 class USWorldUserWidget;
 
-UCLASS()
+UCLASS(Abstract)
 class TOMLOOMANCPPPROJECT_API ASAICharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -21,6 +21,8 @@ class TOMLOOMANCPPPROJECT_API ASAICharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASAICharacter();
+
+	AActor* GetTargetActor() const;
 
 protected:
 
@@ -51,11 +53,14 @@ protected:
 
 	FTimerHandle PlayerSpottedTimerHandle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	FName TargetActorKey;
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 
 	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta);
 
 	void SetTargetActor(AActor* NewTarget);
 

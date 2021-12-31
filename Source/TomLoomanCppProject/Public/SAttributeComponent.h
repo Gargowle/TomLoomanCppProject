@@ -6,8 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "SAttributeComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewRage, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttributeChanged, AActor*, InstigatorActor, USAttributeComponent*, OwningComp, float, NewValue, float, Delta);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TOMLOOMANCPPPROJECT_API USAttributeComponent : public UActorComponent
@@ -27,7 +26,7 @@ public:
 	static bool IsActorAlive(AActor* FromActor);
 
 	UPROPERTY(BlueprintAssignable) //lets us bind/subscribe to this event in BP
-	FOnHealthChanged OnHealthChanged;
+	FOnAttributeChanged OnHealthChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
@@ -45,7 +44,7 @@ public:
 	bool ApplyFullHealth(AActor* InstigatorActor);
 
 	UPROPERTY(BlueprintAssignable) //lets us bind/subscribe to this event in BP
-	FOnRageChanged OnRageChanged;
+	FOnAttributeChanged OnRageChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyRageChange(AActor* InstigatorActor, float Delta);

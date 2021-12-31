@@ -4,6 +4,7 @@
 #include "SActionEffect_Thorns.h"
 #include "SActionComponent.h"
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
 
 USActionEffect_Thorns::USActionEffect_Thorns()
 {
@@ -16,16 +17,11 @@ USActionEffect_Thorns::USActionEffect_Thorns()
 void USActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
-
-	USActionComponent* ActionComp = Cast<USActionComponent>(GetOuter());
-	if(ensure(ActionComp))
+	
+	USAttributeComponent* AttrComp = USAttributeComponent::GetAttributes(GetOwningComponent()->GetOwner());
+	if(ensure(AttrComp))
 	{
-		AActor* Owner = ActionComp->GetOwner();
-		USAttributeComponent* AttrComp = Cast<USAttributeComponent>(Owner->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if(ensure(AttrComp))
-		{
-			AttrComp->OnHealthChanged.AddDynamic(this, &USActionEffect_Thorns::ApplyThornDamage);
-		}
+		AttrComp->OnHealthChanged.AddDynamic(this, &USActionEffect_Thorns::ApplyThornDamage);
 	}
 }
 
@@ -33,19 +29,14 @@ void USActionEffect_Thorns::StopAction_Implementation(AActor* Instigator)
 {
 	Super::StopAction_Implementation(Instigator);
 
-	USActionComponent* ActionComp = Cast<USActionComponent>(GetOuter());
-	if (ensure(ActionComp))
+	USAttributeComponent* AttrComp = USAttributeComponent::GetAttributes(GetOwningComponent()->GetOwner());
+	if (ensure(AttrComp))
 	{
-		AActor* Owner = ActionComp->GetOwner();
-		USAttributeComponent* AttrComp = Cast<USAttributeComponent>(Owner->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if (ensure(AttrComp))
-		{
-			AttrComp->OnHealthChanged.RemoveDynamic(this, &USActionEffect_Thorns::ApplyThornDamage);
-		}
+		AttrComp->OnHealthChanged.RemoveDynamic(this, &USActionEffect_Thorns::ApplyThornDamage);
 	}
 }
 
-void USActionEffect_Thorns::ApplyThornDamage(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
+void USActionEffect_Thorns::ApplyThornDamage(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta)
 {
 	// only apply thorns damage if actually damage was dealt
 	if (Delta >= 0)
@@ -53,21 +44,18 @@ void USActionEffect_Thorns::ApplyThornDamage(AActor* InstigatorActor, USAttribut
 		return;
 	}
 
-	USActionComponent* ActionComp = Cast<USActionComponent>(GetOuter());
-	if (ensure(ActionComp))
+	AActor* Owner = GetOwningComponent()->GetOwner();
+
+	// do not apply thorns damage in case the instigator is the Owner
+	if (InstigatorActor == Owner)
 	{
-		AActor* Owner = ActionComp->GetOwner();
+		return;
+	}
 
-		// do not apply thorns damage in case the instigator is the Owner
-		if (InstigatorActor == Owner)
-		{
-			return;
-		}
+	int32 ThornsDamage = FMath::RoundToInt(-ThornsFactor * Delta);
 
-		USAttributeComponent* AttrComp = Cast<USAttributeComponent>(InstigatorActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if (ensure(AttrComp))
-		{
-			AttrComp->ApplyHealthChange(Owner, FMath::TruncToFloat(ThornsFactor * Delta));
-		}
+	if(ThornsDamage != 0)
+	{
+		USGameplayFunctionLibrary::ApplyDamage(InstigatorActor, Owner, ThornsDamage);		
 	}
 }

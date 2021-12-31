@@ -49,11 +49,11 @@ void ASCharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
-void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
+void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta)
 {
 	if(Delta < 0.0f)
 	{
-		if (NewHealth <= 0.0f)
+		if (NewValue <= 0.0f)
 		{
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			DisableInput(PC);
