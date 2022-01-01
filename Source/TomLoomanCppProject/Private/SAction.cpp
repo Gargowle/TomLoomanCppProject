@@ -3,10 +3,12 @@
 
 #include "SAction.h"
 #include "SActionComponent.h"
+#include "TomLoomanCppProject/TomLoomanCppProject.h"
 
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Running: %s"), *GetNameSafe(this));
+	//(UE_LOG(LogTemp, Log, TEXT("Running: %s"), *GetNameSafe(this));
+	LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	// use outer instead of instigator because instigator could be anything while the tags should be managed for the executor of the action
 	USActionComponent* OwningComp = GetOwningComponent();
@@ -17,7 +19,8 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Stopping: %s"), *GetNameSafe(this));
+	//UE_LOG(LogTemp, Log, TEXT("Stopping: %s"), *GetNameSafe(this));
+	LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	// if StopAction is called even though the action is not running, there is a serious problem that needs to be dealt with immediately
 	ensureAlways(bIsRunning);
