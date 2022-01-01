@@ -20,6 +20,8 @@ class TOMLOOMANCPPPROJECT_API USAction : public UObject
 
 public:
 
+	void Initialize(USActionComponent* NewActionComp);
+
 	/* Start immediately when added to an action component */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	bool bAutoStart;
@@ -42,7 +44,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning() const;
 
+	virtual bool IsSupportedForNetworking() const override;
+
 protected:
+
+	UPROPERTY(Replicated)
+	USActionComponent* ActionComp;
 
 	// tags added to owning actor when activated, removed when action stops
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
@@ -55,6 +62,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwningComponent() const;
 
+	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
 	bool bIsRunning;
 
+	UFUNCTION()
+	void OnRep_IsRunning();
 };

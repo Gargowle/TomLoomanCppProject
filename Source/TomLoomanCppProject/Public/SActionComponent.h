@@ -39,8 +39,9 @@ public:
 
 protected:
 
-	// mark as UPROPERTY such that it is known to Unreals memory management system
-	UPROPERTY()
+	// mark as UPROPERTY such that it is known to Unreals memory management systemW
+	// Edit: Since it is now also supposed to work in network context, it is marked as Replicated and therefore would get marked as UPROPERTY either way
+	UPROPERTY(Replicated)
 	TArray<USAction*> Actions;
 
 	UPROPERTY(EditAnywhere, Category = "Actions")
@@ -48,7 +49,12 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(AActor* Instigator, FName ActionName);
+
 public:
+
+	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

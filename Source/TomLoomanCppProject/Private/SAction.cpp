@@ -3,7 +3,14 @@
 
 #include "SAction.h"
 #include "SActionComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "TomLoomanCppProject/TomLoomanCppProject.h"
+
+
+void USAction::Initialize(USActionComponent* NewActionComp)
+{
+	ActionComp = NewActionComp;
+}
 
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
@@ -23,7 +30,7 @@ void USAction::StopAction_Implementation(AActor* Instigator)
 	LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	// if StopAction is called even though the action is not running, there is a serious problem that needs to be dealt with immediately
-	ensureAlways(bIsRunning);
+	//ensureAlways(bIsRunning);
 
 	USActionComponent* OwningComp = GetOwningComponent();
 	OwningComp->ActiveGameplayTags.RemoveTags(GrantsTags);
@@ -34,10 +41,10 @@ void USAction::StopAction_Implementation(AActor* Instigator)
 UWorld* USAction::GetWorld() const
 {
 	// Outer is set when creating Action via NewObject<T>
-	UActorComponent* Comp = Cast<UActorComponent>(GetOuter());
-	if (Comp)
+	AActor* Actor = Cast<AActor>(GetOuter());
+	if (Actor)
 	{
-		return Comp->GetWorld();
+		return Actor->GetWorld();
 	}
 
 	return nullptr;
@@ -57,11 +64,35 @@ bool USAction::CanStart_Implementation(AActor* Instigator)
 
 USActionComponent* USAction::GetOwningComponent() const
 {
-	// cast must succeed because Outer is set to USActionComponent explicitly in the AddAction method of the USActionComponent
-	return Cast<USActionComponent>(GetOuter());
+	return ActionComp;
+}
+
+void USAction::OnRep_IsRunning()
+{
+	if(bIsRunning)
+	{
+		StartAction(nullptr); // @FIXME: pass instigator
+	}
+	else
+	{
+		StopAction(nullptr); // @FIXME: pass instigator
+	}
 }
 
 bool USAction::IsRunning() const
 {
 	return bIsRunning;
+}
+
+bool USAction::IsSupportedForNetworking() const
+{
+	return true;
+}
+
+void USAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USAction, bIsRunning);
+	DOREPLIFETIME(USAction, ActionComp);
 }
