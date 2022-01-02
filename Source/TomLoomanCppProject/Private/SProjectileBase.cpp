@@ -46,6 +46,8 @@ ASProjectileBase::ASProjectileBase()
 	ImpactShakeInnerRadius = 0.0f;
 	ImpactShakeOuterRadius = 2000.0f;
 
+	bReplicates = true;
+
 }
 
 void ASProjectileBase::PostInitializeComponents()

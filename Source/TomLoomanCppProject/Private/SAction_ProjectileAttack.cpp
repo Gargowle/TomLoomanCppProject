@@ -19,13 +19,18 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	if(ensure(InstigatorCharacter))
 	{
 		InstigatorCharacter->PlayAnimMontage(AttackAnim);
+		UGameplayStatics::SpawnEmitterAttached(AttackVFX, InstigatorCharacter->GetMesh(), HandSocketName);
 
-		FTimerDelegate TimerDel;
-		TimerDel.BindUFunction(this, FName("AttackDelay_Elapsed"), InstigatorCharacter);
+		if (InstigatorCharacter->HasAuthority())
+		{
 
-		FTimerHandle TimerHandle_AttackDelay;
+			FTimerDelegate TimerDel;
+			TimerDel.BindUFunction(this, FName("AttackDelay_Elapsed"), InstigatorCharacter);
 
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, TimerDel, AttackAnimDelay, /*looping*/ false);
+			FTimerHandle TimerHandle_AttackDelay;
+
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, TimerDel, AttackAnimDelay, /*looping*/ false);
+		}
 	}
 }
 
@@ -66,8 +71,6 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		SpawnParams.Instigator = InstigatorCharacter;
 
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-
-		UGameplayStatics::SpawnEmitterAttached(AttackVFX, InstigatorCharacter->GetMesh(), HandSocketName);
 	}
 
 	StopAction(InstigatorCharacter);

@@ -10,6 +10,21 @@
 class UWorld;
 class USActionComponent;
 
+
+USTRUCT()
+struct FActionRepData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY() // added because we want to replicate this variable
+	bool bIsRunning;
+
+	UPROPERTY() // added because we want to replicate this variable
+	AActor* Instigator;
+};
+
 /**
  * 
  */
@@ -62,9 +77,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwningComponent() const;
 
-	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
-	bool bIsRunning;
+	UPROPERTY(ReplicatedUsing = "OnRep_RepData")
+	FActionRepData RepData;
 
 	UFUNCTION()
-	void OnRep_IsRunning();
+	void OnRep_RepData();
 };
