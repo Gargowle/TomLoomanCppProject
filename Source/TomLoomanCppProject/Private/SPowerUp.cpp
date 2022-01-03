@@ -13,6 +13,7 @@ ASPowerUp::ASPowerUp()
 	RootComponent = MeshComp;
 	MeshComp->SetCollisionProfileName(TEXT("PowerUp"));
 
+	bReplicates = true;
 }
 
 void ASPowerUp::Interact_Implementation(APawn* InstigatorPawn)
