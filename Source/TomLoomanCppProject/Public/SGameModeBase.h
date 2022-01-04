@@ -9,6 +9,9 @@
 
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
+class USSaveGame;
+
+
 /**
  * 
  */
@@ -28,6 +31,15 @@ public:
 	
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
 
+	UFUNCTION(BlueprintCallable, Category = "SaveGame")
+	void WriteSaveGame();
+
+	void LoadSaveGame();
+
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -43,6 +55,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimerInterval;
+
+	FString SlotName; // to be deleted once there is proper UI to choose a slot
+
+	UPROPERTY()
+	USSaveGame* CurrentSaveGame;
 
 	UFUNCTION()
 	void SpawnBotTimerElapsed();

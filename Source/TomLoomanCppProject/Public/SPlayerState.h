@@ -8,6 +8,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnCreditChanged, AActor*, InstigatorActor, ASPlayerState*, PlayerState, int, NewCreditScore, int, Delta);
 
+class USSaveGame;
+
 /**
  * 
  */
@@ -16,9 +18,9 @@ class TOMLOOMANCPPPROJECT_API ASPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
-private:
+protected:
 	
-	int Credits;
+	int32 Credits;
 
 public:
 
@@ -30,4 +32,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnCreditChanged OnCreditChanged;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SavePlayerState(USSaveGame* SaveObject);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadPlayerState(USSaveGame* SaveObject);
 };

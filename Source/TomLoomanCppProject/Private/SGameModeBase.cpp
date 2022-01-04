@@ -7,9 +7,14 @@
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
+#include "SGameplayInterface.h"
 #include "SPlayerState.h"
+#include "SSaveGame.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+#include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -22,6 +27,8 @@ ASGameModeBase::ASGameModeBase()
 	NrOfCoinsToSpawnAtGameStart = 4;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
+
+	SlotName = "SaveGame01";
 }
 
 void ASGameModeBase::StartPlay()
@@ -185,5 +192,132 @@ void ASGameModeBase::OnSpawnCoinsQueryCompleted(UEnvQueryInstanceBlueprintWrappe
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Spawn coin EQS could only deliver %i of %i requested legitimate spawn points"), Index, NrOfCoinsToSpawnAtGameStart);
 		}
+	}
+}
+
+void ASGameModeBase::WriteSaveGame()
+{
+	// just iterate all player states as we don't have proper IDs to match yet (Steam accounts, ...)
+	for(APlayerState* APS : GameState->PlayerArray)
+	{
+		ASPlayerState* PS = Cast<ASPlayerState>(APS);
+		if(ensure(PS))
+		{
+			PS->SavePlayerState(CurrentSaveGame);
+			break; // single player only at this point
+		}
+
+	}
+
+	// Clear the list (from previous save game)
+	CurrentSaveGame->SavedActors.Empty();
+
+	// Iterate over the entire world of actors
+	for(FActorIterator It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+
+		// only interested in our "gameplay actors"
+		if (!Actor->Implements<USGameplayInterface>())
+		{
+			continue;
+		}
+
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.Transform = Actor->GetActorTransform();
+
+		// Pass the array to fill with data from actor
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+
+		// Find only variables with UPROPERTY(SaveGame)
+		Ar.ArIsSaveGame = true;
+
+		// Converts Actor's SaveGame UPROPERTIES into binary array
+		Actor->Serialize(Ar);
+
+		CurrentSaveGame->SavedActors.Add(ActorData);
+	}
+
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+}
+
+void ASGameModeBase::LoadSaveGame()
+{
+	// Slot Name: name of the save file
+	// UserIndex: relevant for PS /XBox with several users connected (game pads)
+	if(UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSaveGame == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame data."));
+			return;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+
+		// Iterate over the entire world of actors
+		for (FActorIterator It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+
+			// only interested in our "gameplay actors"
+			if (!Actor->Implements<USGameplayInterface>())
+			{
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
+			{
+				if(ActorData.ActorName == Actor->GetName())
+				{
+					Actor->SetActorTransform(ActorData.Transform);
+
+					FMemoryReader MemReader(ActorData.ByteData);
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+
+					// Consider only variables with UPROPERTY(SaveGame)
+					Ar.ArIsSaveGame = true;
+
+					// Convert binary array back into actor's variables
+					Actor->Serialize(Ar);
+
+					ISGameplayInterface::Execute_OnActorLoaded(Actor);
+
+
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		// currently it makes sense to put this here since this method is triggered at game start either way.
+		// So the first time the game is started, a save game will be created.
+		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
+
+		UE_LOG(LogTemp, Log, TEXT("Created New SaveGame data."));
+	}
+
+}
+
+void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	LoadSaveGame();
+}
+
+void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	ASPlayerState* PS = NewPlayer->GetPlayerState<ASPlayerState>();
+	if(PS)
+	{
+		PS->LoadPlayerState(CurrentSaveGame);
 	}
 }
