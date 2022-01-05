@@ -54,10 +54,10 @@ public:
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Health;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
@@ -69,5 +69,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float RagePerDamage;
 
+	UFUNCTION(NetMulticast, Reliable) // Reliable because it is used for more than just cosmetics (for example player death) @FIXME: mark as unreliable once we moved "state" out of SCharacter
+	void MulticastHealthChanged(AActor* Instigator, float NewHealth, float Delta);
 	
 };

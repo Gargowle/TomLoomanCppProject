@@ -4,6 +4,7 @@
 #include "SAttributeComponent.h"
 
 #include "SGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f, TEXT("Global damage modifier for AttributeComponent."), ECVF_Cheat);
 
@@ -21,6 +22,8 @@ USAttributeComponent::USAttributeComponent()
 	RageMax = 100.0f;
 	Rage = 0.0f;
 	RagePerDamage = 1.0f;
+
+	SetIsReplicatedByDefault(true);
 }
 
 bool USAttributeComponent::IsFullHealth()
@@ -66,27 +69,34 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	}
 
 	const float OldHealth = Health;
+	float NewHealth  = FMath::Clamp((Health + Delta), 0.0f, HealthMax);
 
-	Health = FMath::Clamp((Health+Delta), 0.0f, HealthMax);
+	const float ActualDelta = NewHealth - OldHealth;
 
-	const float ActualDelta = Health - OldHealth;	
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
-
-	// Death
-	if(ActualDelta < 0.0f && Health <= 0.0f)
+	// only do actual changes if on server
+	if(GetOwner()->HasAuthority())
 	{
-		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
-		if (GM)
+		Health = NewHealth;
+		if (ActualDelta < 0)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+		// Death
+		if (ActualDelta < 0.0f && Health <= 0.0f)
+		{
+			ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
+		}
+
+		if (ActualDelta < 0.0f)
+		{
+			ApplyRageChange(InstigatorActor, (-ActualDelta * RagePerDamage));
 		}
 	}
-
-	if(ActualDelta < 0.0f)
-	{
-		ApplyRageChange(InstigatorActor, (- ActualDelta * RagePerDamage));
-	}
-
+	
 	return ActualDelta != 0.0f;
 }
 
@@ -108,6 +118,21 @@ float USAttributeComponent::GetHealth()
 bool USAttributeComponent::ApplyFullHealth(AActor* InstigatorActor)
 {
 	return ApplyHealthChange(InstigatorActor, HealthMax);
+}
+
+void USAttributeComponent::MulticastHealthChanged_Implementation(AActor* Instigator, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(Instigator, this, NewHealth, Delta);
+}
+
+void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USAttributeComponent, Health);
+	DOREPLIFETIME(USAttributeComponent, HealthMax);
+	//DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_InitialOnly);
+
 }
 
 bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
