@@ -22,8 +22,20 @@ ASItemChest::ASItemChest()
 	TargetPitch = 110.0;
 
 	bReplicates = true;
+	BaseMesh->SetSimulatePhysics(true);
+	BaseMesh->SetIsReplicated(true);
+	SetReplicateMovement(true);
+
 
 	bLidOpened = false;
+}
+
+void ASItemChest::OnActorLoaded_Implementation()
+{
+	ISGameplayInterface::OnActorLoaded_Implementation();
+
+	// make sure that the "visual state" of the treasure chest is actually loaded correctly
+	OnRep_LidOpened();
 }
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)

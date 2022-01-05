@@ -22,13 +22,14 @@ public:
 	// the suffix "_Implementation" comes from the fact that this method was tagged with UFUNCTION(BlueprintNativeEvent)
 	void Interact_Implementation(APawn* InstigatorPawn);
 	
-public:	
 	// Sets default values for this actor's properties
 	ASItemChest();
 
+	virtual void OnActorLoaded_Implementation() override;
+
 protected:
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly) //ReplicatedUsing is the same as RepNotify in BP
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) //ReplicatedUsing is the same as RepNotify in BP
 	bool bLidOpened;
 
 	UFUNCTION()
