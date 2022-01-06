@@ -83,7 +83,6 @@ void USInteractionComponent::FindBestInteractable()
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)// check agains nullpointer
 		{
-
 			// could hit anything; check if interface is actually implemented
 			// QUIRK: check if U... is implemented, but lateron actually use I...
 			if (HitActor->Implements<USGameplayInterface>())
@@ -97,7 +96,6 @@ void USInteractionComponent::FindBestInteractable()
 				FocusedActor = HitActor;
 				break;
 			}
-
 		}
 	}
 
@@ -118,7 +116,6 @@ void USInteractionComponent::FindBestInteractable()
 				DefaultWidgetInstance->AddToViewport();				
 			}
 		}
-
 	}
 	else
 	{

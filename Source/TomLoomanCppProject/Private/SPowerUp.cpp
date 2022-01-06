@@ -22,11 +22,16 @@ void ASPowerUp::Interact_Implementation(APawn* InstigatorPawn)
 	if (IsInstigatorEligible(InstigatorPawn))
 	{
 		ApplyEffect(InstigatorPawn);
-		RootComponent->SetVisibility(false, true);
-		SetActorEnableCollision(false);
-		FTimerHandle TimerHandle_Respawn;
-		GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASPowerUp::Respawn, SecondsToRespawn);
+		MulticastConsumePowerUp();
 	}
+}
+
+void ASPowerUp::MulticastConsumePowerUp_Implementation()
+{
+	RootComponent->SetVisibility(false, true);
+	SetActorEnableCollision(false);
+	FTimerHandle TimerHandle_Respawn;
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &ASPowerUp::Respawn, SecondsToRespawn);
 }
 
 void ASPowerUp::Respawn()

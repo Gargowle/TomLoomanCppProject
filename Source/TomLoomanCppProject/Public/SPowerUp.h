@@ -36,4 +36,7 @@ protected:
 	virtual bool IsInstigatorEligible(APawn * InstigatorPawn) PURE_VIRTUAL(ASPowerUp::IsInstigatorEligible, return false;);
 
 	virtual void Respawn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void MulticastConsumePowerUp();
 };
