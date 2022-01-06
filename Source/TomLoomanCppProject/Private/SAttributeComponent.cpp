@@ -77,10 +77,8 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	if(GetOwner()->HasAuthority())
 	{
 		Health = NewHealth;
-		if (ActualDelta < 0)
-		{
-			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
-		}
+		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+
 		// Death
 		if (ActualDelta < 0.0f && Health <= 0.0f)
 		{
