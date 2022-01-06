@@ -19,13 +19,19 @@ class TOMLOOMANCPPPROJECT_API ASPlayerState : public APlayerState
 	GENERATED_BODY()
 
 protected:
-	
+
+	UPROPERTY(Replicated)
 	int32 Credits;
 
 public:
 
+	ASPlayerState();
+
 	UFUNCTION(BlueprintPure)
 	int GetCredits() const;	
+
+	UFUNCTION(Client, Reliable)
+	void ClientCreditChanged(AActor* InstigatorActor, ASPlayerState* PlayerState, int NewCreditScore, int Delta);
 
 	UFUNCTION(BlueprintCallable)
 	void AddCredits(AActor* InstigatorActor, int CreditsToAdd);
