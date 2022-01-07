@@ -7,6 +7,7 @@
 #include "SPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnChanged, APawn*, NewPawn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChanged, APlayerState*, NewPlayerState);
 
 /**
  * 
@@ -22,4 +23,11 @@ protected:
 	FOnPawnChanged OnPawnChanged;
 
 	virtual void SetPawn(APawn* InPawn) override;
+
+	// Listen for incoming player state (for clientes this may be nullptr when initially joining a game,
+	// afterwards player state will not change again as Player Controllers maintain the same player state throughout the level)
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerStateChanged OnPlayerStateReceived;
+
+	virtual void OnRep_PlayerState() override;
 };

@@ -50,6 +50,7 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 	if(SaveObject)
 	{
 		Credits = SaveObject->Credits;
+		OnCreditChanged.Broadcast(this, this, Credits, Credits);
 	}
 }
 
