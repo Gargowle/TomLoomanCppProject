@@ -52,22 +52,7 @@ void ASAICharacter::OnPawnSeen(APawn* Pawn)
 			DrawDebugString(GetWorld(), GetActorLocation(), TEXT("PLAYER SPOTTED"), nullptr, FColor::White, 4.0f, true);
 		}
 
-		if ((GetWorldTimerManager().GetTimerRemaining(PlayerSpottedTimerHandle) <= 0.0) || !PlayerSpottedWidget)
-		{
-			PlayerSpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
-			if (PlayerSpottedWidget)
-			{
-				PlayerSpottedWidget->AttachedActor = this;
-
-				// ZOrder > 0 in order to be above the health bar (in case that the minion has a health bar already)
-				PlayerSpottedWidget->AddToViewport(1);
-				// do not clear timer before setting it such that if minion sees two targets after each other
-				// the duration is just as long as it would see one target
-
-				// set timer to remove widget after some time again
-				GetWorldTimerManager().SetTimer(PlayerSpottedTimerHandle, PlayerSpottedWidget, &UUserWidget::RemoveFromParent, 3.0);
-			}
-		}
+		MulticastSpawnPlayerSpottedWidget();
 	}
 }
 
@@ -138,5 +123,25 @@ AActor* ASAICharacter::GetTargetActor() const
 	}
 
 	return nullptr;
+}
+
+void ASAICharacter::MulticastSpawnPlayerSpottedWidget_Implementation()
+{
+	if ((GetWorldTimerManager().GetTimerRemaining(PlayerSpottedTimerHandle) <= 0.0) || !PlayerSpottedWidget)
+	{
+		PlayerSpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+		if (PlayerSpottedWidget)
+		{
+			PlayerSpottedWidget->AttachedActor = this;
+
+			// ZOrder > 0 in order to be above the health bar (in case that the minion has a health bar already)
+			PlayerSpottedWidget->AddToViewport(1);
+			// do not clear timer before setting it such that if minion sees two targets after each other
+			// the duration is just as long as it would see one target
+
+			// set timer to remove widget after some time again
+			GetWorldTimerManager().SetTimer(PlayerSpottedTimerHandle, PlayerSpottedWidget, &UUserWidget::RemoveFromParent, 3.0);
+		}
+	}
 }
 
