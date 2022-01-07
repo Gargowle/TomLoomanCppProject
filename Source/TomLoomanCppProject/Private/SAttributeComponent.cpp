@@ -26,6 +26,13 @@ USAttributeComponent::USAttributeComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+void USAttributeComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	OnRageChanged.AddDynamic(this, &USAttributeComponent::HealthChangeCallback);
+}
+
 bool USAttributeComponent::IsFullHealth()
 {
 	return Health >= HealthMax;
@@ -129,24 +136,44 @@ void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(USAttributeComponent, Health);
 	DOREPLIFETIME(USAttributeComponent, HealthMax);
+	DOREPLIFETIME(USAttributeComponent, Rage);
+	DOREPLIFETIME(USAttributeComponent, RageMax);
+	DOREPLIFETIME(USAttributeComponent, RagePerDamage);
 	//DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_InitialOnly);
 
 }
 
 bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 {
-	const float OldRage = Rage;
+	if(GetOwner()->HasAuthority())
+	{
+		const float OldRage = Rage;
 
-	Rage = FMath::Clamp((Rage + Delta), 0.0f, RageMax);
+		Rage = FMath::Clamp((Rage + Delta), 0.0f, RageMax);
 
-	const float ActualDelta = Rage - OldRage;
+		const float ActualDelta = Rage - OldRage;
 
-	OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
+		MulticastRageChanged(InstigatorActor, Rage, ActualDelta);
 
-	return ActualDelta != 0;
+		return ActualDelta != 0;		
+	}
+	return false;
 }
 
 float USAttributeComponent::GetRage()
 {
 	return Rage;
+}
+
+void USAttributeComponent::MulticastRageChanged_Implementation(AActor* Instigator, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(Instigator, this, NewRage, Delta);
+}
+
+void USAttributeComponent::HealthChangeCallback(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta)
+{
+	if(Delta < 0 && GetOwner()->HasAuthority())
+	{
+		ApplyRageChange(InstigatorActor, Delta);
+	}
 }

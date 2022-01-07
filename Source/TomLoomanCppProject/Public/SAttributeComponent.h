@@ -60,16 +60,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated,  Category = "Attributes")
 	float Rage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RagePerDamage;
 
 	UFUNCTION(NetMulticast, Reliable) // Reliable because it is used for more than just cosmetics (for example player death) @FIXME: mark as unreliable once we moved "state" out of SCharacter
 	void MulticastHealthChanged(AActor* Instigator, float NewHealth, float Delta);
-	
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRageChanged(AActor* Instigator, float NewRage, float Delta);
+
+	virtual void PostInitProperties() override;
+
+	virtual void HealthChangeCallback(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta);
 };
