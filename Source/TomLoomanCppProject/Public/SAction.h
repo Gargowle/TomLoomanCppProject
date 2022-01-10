@@ -82,4 +82,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_RepData();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UTexture2D* Icon;
 };

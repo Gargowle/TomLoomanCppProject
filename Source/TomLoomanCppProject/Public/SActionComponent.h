@@ -9,6 +9,8 @@
 
 class USAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionStateChanged, USActionComponent*, OwningComp, USAction*, Action);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TOMLOOMANCPPPROJECT_API USActionComponent : public UActorComponent
 {
@@ -41,7 +43,7 @@ protected:
 
 	// mark as UPROPERTY such that it is known to Unreals memory management systemW
 	// Edit: Since it is now also supposed to work in network context, it is marked as Replicated and therefore would get marked as UPROPERTY either way
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<USAction*> Actions;
 
 	UPROPERTY(EditAnywhere, Category = "Actions")
@@ -56,6 +58,12 @@ protected:
 	void ServerStopAction(AActor* Instigator, FName ActionName);
 
 public:
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStarted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStopped;
 
 	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
