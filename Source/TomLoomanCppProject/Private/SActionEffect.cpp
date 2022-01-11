@@ -49,3 +49,10 @@ void USActionEffect::StopAction_Implementation(AActor* Instigator)
 	
 	ActionComp->RemoveAction(this);
 }
+
+float USActionEffect::GetTimeRemaining() const
+{
+	float EndTime = TimeStarted + Duration;
+
+	return EndTime - GetWorld()->GetTimeSeconds();
+}
