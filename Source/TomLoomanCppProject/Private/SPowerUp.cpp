@@ -26,6 +26,11 @@ void ASPowerUp::Interact_Implementation(APawn* InstigatorPawn)
 	}
 }
 
+FText ASPowerUp::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void ASPowerUp::MulticastConsumePowerUp_Implementation()
 {
 	RootComponent->SetVisibility(false, true);
@@ -38,12 +43,5 @@ void ASPowerUp::Respawn()
 {
 	SetActorEnableCollision(true);
 	RootComponent->SetVisibility(true, true);
-}
-
-// Called when the game starts or when spawned
-void ASPowerUp::BeginPlay()
-{
-	Super::BeginPlay();
-	
 }
 

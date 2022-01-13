@@ -21,8 +21,6 @@ public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MeshComp;
@@ -39,4 +37,6 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastConsumePowerUp();
+
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 };

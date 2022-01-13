@@ -27,5 +27,7 @@ protected:
 	virtual void ApplyEffect(APawn* InstigatorPawn) override;
 
 	virtual bool IsInstigatorEligible(APawn * InstigatorPawn) override;
+
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 	
 };

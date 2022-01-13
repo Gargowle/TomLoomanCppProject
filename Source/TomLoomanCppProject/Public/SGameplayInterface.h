@@ -29,4 +29,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable) //Expose to implementing in BPs (enable BP only classes, but also C++). Also make it possible to call it in BP
 	void Interact(APawn* InstigatorPawn);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FText GetInteractText(APawn* InstigatorPawn);
 };
