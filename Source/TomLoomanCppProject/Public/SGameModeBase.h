@@ -3,13 +3,46 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/GameModeBase.h"
 #include "SGameModeBase.generated.h"
 
+class USMonsterData;
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class USSaveGame;
+class UDataTable;
+
+/* DataTable Row for spawning monsters in game mode */
+USTRUCT(BlueprintType)
+struct FMonsterInfoRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FMonsterInfoRow()
+	{
+		Weight = 1.0f;
+		SpawnCost = 5.0f;
+		KillReward = 20.0f;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USMonsterData* MonsterData;
+
+	/* Relative chance to pick this monster */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Weight;
+
+	/* Points required by the game mode to spawn this unit */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnCost;
+
+	/* Amount of credits awarded to killer of this unit */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float KillReward;
+};
 
 
 /**
@@ -42,8 +75,9 @@ public:
 
 protected:
 
+	/* All available monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TSubclassOf<AActor> MinionClass;
+	UDataTable* MonsterTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* SpawnBotQuery;
