@@ -77,5 +77,6 @@ protected:
 
 	virtual void PostInitProperties() override;
 
+	UFUNCTION()
 	virtual void HealthChangeCallback(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewValue, float Delta);
 };
