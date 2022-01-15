@@ -14,6 +14,7 @@ ASMagicProjectile::ASMagicProjectile()
 	DamageAmount = 50.0f;
 	MovementComp->InitialSpeed = 4000.0f;
 
+	InitialLifeSpan = 15.0f;
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
