@@ -31,6 +31,21 @@ void USActionComponent::BeginPlay()
 	}
 }
 
+void USActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// make copy of the array because original array is going to be modified during the loop
+	TArray<USAction*> ActionsCopy = Actions;
+	for (USAction* Action : ActionsCopy)
+	{
+		if (Action && Action-> IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
