@@ -27,9 +27,7 @@ ASAICharacter::ASAICharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	TimeToHitParamName = TEXT("HitFlashTimeToHit");
-
-	// for projectiles to be able to hit the mesh such that directional damage can be applied at the right point
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	
 	// for interacting with projectiles that work via overlap (not hit)
 	GetMesh()->SetGenerateOverlapEvents(true);
 }
