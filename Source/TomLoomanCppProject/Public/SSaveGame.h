@@ -40,6 +40,10 @@ public:
 	UPROPERTY() // such that it can be found by the saving system
 	int32 Credits;
 
+	/* Longest Survival Time */
+	UPROPERTY()
+	float PersonalRecordTime;
+
 	UPROPERTY()
 	TArray<FActorSaveData> SavedActors;
 

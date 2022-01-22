@@ -37,11 +37,29 @@ void ASPlayerState::ClientCreditChanged_Implementation(AActor* InstigatorActor, 
 	OnCreditChanged.Broadcast(InstigatorActor, PlayerState, NewCreditScore, Delta);
 }
 
+
+bool ASPlayerState::UpdatePersonalRecord(float NewTime)
+{
+	if (NewTime > PersonalRecordTime)
+	{
+		float OldRecord = PersonalRecordTime;
+
+		PersonalRecordTime = NewTime;
+
+		OnRecordTimeChanged.Broadcast(this, NewTime, OldRecord);
+
+		return true;
+	}
+
+	return false;
+}
+
 void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if(SaveObject)
 	{
 		SaveObject->Credits = Credits;
+		SaveObject->PersonalRecordTime = PersonalRecordTime;
 	}
 }
 
@@ -51,6 +69,9 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 	{
 		Credits = SaveObject->Credits;
 		OnCreditChanged.Broadcast(this, this, Credits, Credits);
+
+		PersonalRecordTime = SaveObject->PersonalRecordTime;
+		OnRecordTimeChanged.Broadcast(this, PersonalRecordTime, PersonalRecordTime);
 	}
 }
 

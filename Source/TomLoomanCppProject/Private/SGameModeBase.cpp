@@ -186,13 +186,15 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	ASCharacter* VictimPlayer = Cast <ASCharacter>(VictimActor);
 	if (VictimPlayer)
 	{
-		FTimerHandle TimerHandle_Respawn;
+		// Store time if it was better than previous record
+		ASPlayerState* PS = VictimPlayer->GetPlayerState<ASPlayerState>();
+		if(ensure(PS))
+		{
+			PS->UpdatePersonalRecord(GetWorld()->TimeSeconds);
+		}
 
-		FTimerDelegate Delegate_Respawn;
-		Delegate_Respawn.BindUFunction(this, TEXT("RespawnPlayerElapsed"), VictimPlayer->GetController());
-
-		float RespawnDelay = 2.0f;
-		GetWorldTimerManager().SetTimer(TimerHandle_Respawn, Delegate_Respawn, RespawnDelay, false);
+		// Immediately auto save on death
+		WriteSaveGame();
 
 		return;
 	}
