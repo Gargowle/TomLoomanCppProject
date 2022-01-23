@@ -123,13 +123,33 @@ void ASGameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 		{
 			TArray<FMonsterInfoRow*> Rows;
 			MonsterTable->GetAllRows("", Rows);
-			
+
+			// Get total weight
+			float TotalWeight = 0;
+			for(FMonsterInfoRow* Entry : Rows)
+			{
+				TotalWeight += Entry->Weight;
+			}
+
 			// get random enemy
-			const int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
-			const FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
+			const float RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+			FMonsterInfoRow* SelectedRow = nullptr;
+
+			// Reset
+			TotalWeight = 0;
+			for(FMonsterInfoRow* Entry : Rows)
+			{
+				TotalWeight += Entry->Weight;
+
+				if(RandomWeight <= TotalWeight)
+				{
+					SelectedRow = Entry;
+					break;
+				}
+			}
 
 			UAssetManager* Manager = UAssetManager::GetIfValid();
-			if(Manager)
+			if(Manager && SelectedRow)
 			{
 				LogOnScreen(this, TEXT("Loading monster ..."), FColor::Green);
 
