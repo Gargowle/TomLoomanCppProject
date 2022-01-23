@@ -28,6 +28,7 @@ ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
 	CreditsPerKill = 5;
+	CooldownTimeBetweenFailures = 8.0f;
 	NrOfCoinsToSpawnAtGameStart = 4;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
@@ -69,6 +70,13 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
 		return;
 	}
+
+	if(CooldownBotSpawnUntil > GetWorld()->TimeSeconds)
+	{
+		// Still cooling down
+		return;
+	}
+
 	// check if full bot capacity is reached already. If reached, return before query is actually made
 	int32 NrOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
@@ -83,11 +91,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 
 	UE_LOG(LogTemp, Log, TEXT("Found %i alive bots."), NrOfAliveBots);
 
-	float MaxBotCount = 10.0f;
-	if (DifficultyCurve)
-	{
-		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->GetTimeSeconds());
-	}
+	const float MaxBotCount = 40.0f;
 
 	if (NrOfAliveBots >= MaxBotCount)
 	{
@@ -95,14 +99,58 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		return;
 	}
 
+	// Give points to spend
+	if(SpawnCreditCurve)
+	{
+		AvailableSpawnCredit += SpawnCreditCurve->GetFloatValue(GetWorld()->TimeSeconds);
+	}
+
+	if(MonsterTable)
+	{
+		TArray<FMonsterInfoRow*> Rows;
+		MonsterTable->GetAllRows("", Rows);
+
+		// Get total weight
+		float TotalWeight = 0;
+		for(FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+		}
+
+		// Reset
+		TotalWeight = 0;
+		SelectedMonsterRow = nullptr;
+
+		// get random enemy
+		const float RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+		for(FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+
+			if(RandomWeight <= TotalWeight)
+			{
+				SelectedMonsterRow = Entry;
+				break;
+			}
+		}
+
+		if(!SelectedMonsterRow || SelectedMonsterRow->SpawnCost >= AvailableSpawnCredit)
+		{
+			// Too expensive to spawn, try again soon
+			CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
+
+			LogOnScreen(this, FString::Printf(TEXT("Spawn cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
+			return;
+		}
+	}
+	
 	//last entry does not need to be specified (only if we want to specify the return class); "Tom Looman never did this in his life"
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
 
 	if(ensure(QueryInstance))
 	{
 		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnSpawnBotQueryCompleted);
-	}	
-		
+	}
 }
 
 void ASGameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
@@ -119,47 +167,18 @@ void ASGameModeBase::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 
 	if(Locations.IsValidIndex(0))
 	{
-		if(MonsterTable)
+		UAssetManager* Manager = UAssetManager::GetIfValid();
+		if(Manager && SelectedMonsterRow)
 		{
-			TArray<FMonsterInfoRow*> Rows;
-			MonsterTable->GetAllRows("", Rows);
+			//Apply spawn cost
+			AvailableSpawnCredit -= SelectedMonsterRow->SpawnCost;
+			
+			LogOnScreen(this, TEXT("Loading monster ..."), FColor::Green);
 
-			// Get total weight
-			float TotalWeight = 0;
-			for(FMonsterInfoRow* Entry : Rows)
-			{
-				TotalWeight += Entry->Weight;
-			}
-
-			// get random enemy
-			const float RandomWeight = FMath::RandRange(0.0f, TotalWeight);
-			FMonsterInfoRow* SelectedRow = nullptr;
-
-			// Reset
-			TotalWeight = 0;
-			for(FMonsterInfoRow* Entry : Rows)
-			{
-				TotalWeight += Entry->Weight;
-
-				if(RandomWeight <= TotalWeight)
-				{
-					SelectedRow = Entry;
-					break;
-				}
-			}
-
-			UAssetManager* Manager = UAssetManager::GetIfValid();
-			if(Manager && SelectedRow)
-			{
-				LogOnScreen(this, TEXT("Loading monster ..."), FColor::Green);
-
-				TArray<FName> Bundles; // emtpy TArray because no bundles are defined
-				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
-				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
-			}
-
+			TArray<FName> Bundles; // emtpy TArray because no bundles are defined
+			FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedMonsterRow->MonsterId, Locations[0]);
+			Manager->LoadPrimaryAsset(SelectedMonsterRow->MonsterId, Bundles, Delegate);
 		}
-
 
 		// Track all the used spawn locations
 		if(CVarDrawDebugSphereOnBotSpawn.GetValueOnGameThread())

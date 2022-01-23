@@ -82,15 +82,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* SpawnBotQuery;
 
+	/* Curve to grant credits to spend on spawning monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UCurveFloat* DifficultyCurve;
+	UCurveFloat* SpawnCreditCurve;
+
+	/* Time to wait between failed attempts to spawn/by monster to give some time to build up credits */
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	float CooldownTimeBetweenFailures;
 
 	FTimerHandle TimerHandle_SpawnBots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimerInterval;
 
-	FString SlotName; // to be deleted once there is proper UI to choose a slot
+	/* Points available to spend on spawning monsters */
+	float AvailableSpawnCredit;
+
+	/* GameTime cooldown to give spawner some time to build up credits */
+	float CooldownBotSpawnUntil;
+
+	FMonsterInfoRow* SelectedMonsterRow;
+
+	/* Name of slot to save/load to disk. Can be overridden via InitGame() options string */
+	FString SlotName;
 
 	UPROPERTY()
 	USSaveGame* CurrentSaveGame;
