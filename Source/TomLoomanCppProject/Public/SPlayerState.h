@@ -43,6 +43,9 @@ public:
 	void ClientCreditChanged(AActor* InstigatorActor, ASPlayerState* PlayerState, int NewCreditScore, int Delta);
 
 	UFUNCTION(BlueprintCallable)
+	void SetCredits(AActor* InstigatorActor, int CreditsToSet);
+
+	UFUNCTION(BlueprintCallable)
 	void AddCredits(AActor* InstigatorActor, int CreditsToAdd);
 
 	UPROPERTY(BlueprintAssignable)
@@ -60,4 +63,7 @@ public:
 	/* Checks current record and only sets if better time was passed in. */
 	UFUNCTION(BlueprintCallable)
 	bool UpdatePersonalRecord(float NewTime);
+
+	UFUNCTION(BlueprintCallable)
+	bool OverrideSpawnTransform(USSaveGame* SaveObject);
 };

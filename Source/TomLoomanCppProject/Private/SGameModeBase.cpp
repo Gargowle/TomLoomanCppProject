@@ -291,6 +291,10 @@ void ASGameModeBase::OnSpawnCoinsQueryCompleted(UEnvQueryInstanceBlueprintWrappe
 
 void ASGameModeBase::WriteSaveGame()
 {
+	// Clear arrays, as they may contain data from previously loaded SaveGame
+	CurrentSaveGame->SavedPlayers.Empty();
+	CurrentSaveGame->SavedActors.Empty();
+
 	// just iterate all player states as we don't have proper IDs to match yet (Steam accounts, ...)
 	for(APlayerState* APS : GameState->PlayerArray)
 	{
@@ -300,12 +304,8 @@ void ASGameModeBase::WriteSaveGame()
 			PS->SavePlayerState(CurrentSaveGame);
 			break; // single player only at this point
 		}
-
 	}
-
-	// Clear the list (from previous save game)
-	CurrentSaveGame->SavedActors.Empty();
-
+	
 	// Iterate over the entire world of actors
 	for(FActorIterator It(GetWorld()); It; ++It)
 	{
@@ -318,7 +318,7 @@ void ASGameModeBase::WriteSaveGame()
 		}
 
 		FActorSaveData ActorData;
-		ActorData.ActorName = Actor->GetName();
+		ActorData.ActorName = Actor->GetFName();
 		ActorData.Transform = Actor->GetActorTransform();
 
 		// Pass the array to fill with data from actor
@@ -336,6 +336,8 @@ void ASGameModeBase::WriteSaveGame()
 	}
 
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+
+	OnSaveGameWritten.Broadcast(CurrentSaveGame);
 }
 
 void ASGameModeBase::LoadSaveGame()
@@ -358,15 +360,15 @@ void ASGameModeBase::LoadSaveGame()
 		{
 			AActor* Actor = *It;
 
-			// only interested in our "gameplay actors"
-			if (!Actor->Implements<USGameplayInterface>())
+			// only interested in our "gameplay actors", skip actors that are being destroyed
+			if (Actor->IsPendingKill() || !Actor->Implements<USGameplayInterface>())
 			{
 				continue;
 			}
 
 			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
 			{
-				if(ActorData.ActorName == Actor->GetName())
+				if(ActorData.ActorName == Actor->GetFName())
 				{
 					Actor->SetActorTransform(ActorData.Transform);
 
@@ -386,6 +388,8 @@ void ASGameModeBase::LoadSaveGame()
 				}
 			}
 		}
+
+		OnSaveGameLoaded.Broadcast(CurrentSaveGame);
 	}
 	else
 	{
@@ -420,4 +424,11 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 	}
 
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	// Now we are ready to override spawn location.
+	// Alternatively, we could override core spawn location to use store locations immediately (skipping the whole 'find player start' logic)
+	if (PS)
+	{
+		PS->OverrideSpawnTransform(CurrentSaveGame);
+	}
 }

@@ -14,6 +14,9 @@ class UEnvQueryInstanceBlueprintWrapper;
 class USSaveGame;
 class UDataTable;
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveGameSignature, class USSaveGame*, SaveObject);
+
 /* DataTable Row for spawning monsters in game mode */
 USTRUCT(BlueprintType)
 struct FMonsterInfoRow : public FTableRowBase
@@ -63,6 +66,12 @@ public:
 	void KillAll();
 	
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSaveGameSignature OnSaveGameLoaded;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSaveGameSignature OnSaveGameWritten;
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame")
 	void WriteSaveGame();
