@@ -8,18 +8,15 @@
 #include "SActionComponent.h"
 #include "SAttributeComponent.h"
 #include "SCharacter.h"
-#include "SGameplayInterface.h"
 #include "SMonsterData.h"
 #include "SPlayerState.h"
-#include "SSaveGame.h"
 #include "AI/SAICharacter.h"
 #include "Engine/AssetManager.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "TomLoomanCppProject/TomLoomanCppProject.h"
-#include "SSaveGameSettings.h"
+#include "SSaveGameSubsystem.h"
 
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -33,10 +30,6 @@ ASGameModeBase::ASGameModeBase()
 	NrOfCoinsToSpawnAtGameStart = 4;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
-
-	// get default slot name for slot name from project settings
-	const USSaveGameSettings* SGSettings = GetDefault<USSaveGameSettings>();
-	SlotName = SGSettings->SaveSlotName;
 }
 
 void ASGameModeBase::StartPlay()
@@ -236,7 +229,8 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 		}
 
 		// Immediately auto save on death
-		WriteSaveGame();
+		USSaveGameSubsystem* SG = GetGameInstance()->GetSubsystem<USSaveGameSubsystem>();
+		SG->WriteSaveGame();
 
 		return;
 	}
@@ -292,146 +286,26 @@ void ASGameModeBase::OnSpawnCoinsQueryCompleted(UEnvQueryInstanceBlueprintWrappe
 	}
 }
 
-void ASGameModeBase::WriteSaveGame()
-{
-	// Clear arrays, as they may contain data from previously loaded SaveGame
-	CurrentSaveGame->SavedPlayers.Empty();
-	CurrentSaveGame->SavedActors.Empty();
-
-	// just iterate all player states as we don't have proper IDs to match yet (Steam accounts, ...)
-	for(APlayerState* APS : GameState->PlayerArray)
-	{
-		ASPlayerState* PS = Cast<ASPlayerState>(APS);
-		if(ensure(PS))
-		{
-			PS->SavePlayerState(CurrentSaveGame);
-			break; // single player only at this point
-		}
-	}
-	
-	// Iterate over the entire world of actors
-	for(FActorIterator It(GetWorld()); It; ++It)
-	{
-		AActor* Actor = *It;
-
-		// only interested in our "gameplay actors"
-		if (!Actor->Implements<USGameplayInterface>())
-		{
-			continue;
-		}
-
-		FActorSaveData ActorData;
-		ActorData.ActorName = Actor->GetFName();
-		ActorData.Transform = Actor->GetActorTransform();
-
-		// Pass the array to fill with data from actor
-		FMemoryWriter MemWriter(ActorData.ByteData);
-
-		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
-
-		// Find only variables with UPROPERTY(SaveGame)
-		Ar.ArIsSaveGame = true;
-
-		// Converts Actor's SaveGame UPROPERTIES into binary array
-		Actor->Serialize(Ar);
-
-		CurrentSaveGame->SavedActors.Add(ActorData);
-	}
-
-	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
-
-	OnSaveGameWritten.Broadcast(CurrentSaveGame);
-}
-
-void ASGameModeBase::LoadSaveGame()
-{
-	// Slot Name: name of the save file
-	// UserIndex: relevant for PS /XBox with several users connected (game pads)
-	if(UGameplayStatics::DoesSaveGameExist(SlotName, 0))
-	{
-		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
-		if (CurrentSaveGame == nullptr)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame data."));
-			return;
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
-
-		// Iterate over the entire world of actors
-		for (FActorIterator It(GetWorld()); It; ++It)
-		{
-			AActor* Actor = *It;
-
-			// only interested in our "gameplay actors", skip actors that are being destroyed
-			if (Actor->IsPendingKill() || !Actor->Implements<USGameplayInterface>())
-			{
-				continue;
-			}
-
-			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
-			{
-				if(ActorData.ActorName == Actor->GetFName())
-				{
-					Actor->SetActorTransform(ActorData.Transform);
-
-					FMemoryReader MemReader(ActorData.ByteData);
-					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
-
-					// Consider only variables with UPROPERTY(SaveGame)
-					Ar.ArIsSaveGame = true;
-
-					// Convert binary array back into actor's variables
-					Actor->Serialize(Ar);
-
-					ISGameplayInterface::Execute_OnActorLoaded(Actor);
-
-
-					break;
-				}
-			}
-		}
-
-		OnSaveGameLoaded.Broadcast(CurrentSaveGame);
-	}
-	else
-	{
-		// currently it makes sense to put this here since this method is triggered at game start either way.
-		// So the first time the game is started, a save game will be created.
-		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
-
-		UE_LOG(LogTemp, Log, TEXT("Created New SaveGame data."));
-	}
-
-}
-
 void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
-	if(SelectedSaveSlot.Len() > 0)
-	{
-		SlotName = SelectedSaveSlot; // member variable that defines the slot that is used for loading
-	}
+	// Save/Load logic is in SaveGameSubsystem
+	USSaveGameSubsystem* SG = GetGameInstance()->GetSubsystem<USSaveGameSubsystem>();
 
-	LoadSaveGame();
+	// Optional slot name (falls back to slot specified in USSaveGameSettings class / project settings / ini
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+	SG->LoadSaveGame(SelectedSaveSlot);
 }
 
 void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	ASPlayerState* PS = NewPlayer->GetPlayerState<ASPlayerState>();
-	if(PS)
-	{
-		PS->LoadPlayerState(CurrentSaveGame);
-	}
+	USSaveGameSubsystem* SG = GetGameInstance()->GetSubsystem<USSaveGameSubsystem>();
+	SG->HandleStartingNewPlayer(NewPlayer);
 
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 
 	// Now we are ready to override spawn location.
 	// Alternatively, we could override core spawn location to use store locations immediately (skipping the whole 'find player start' logic)
-	if (PS)
-	{
-		PS->OverrideSpawnTransform(CurrentSaveGame);
-	}
+	SG->OverrideSpawnTransform(NewPlayer);
 }

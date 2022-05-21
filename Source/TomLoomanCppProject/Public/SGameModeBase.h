@@ -11,11 +11,7 @@
 class USMonsterData;
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
-class USSaveGame;
 class UDataTable;
-
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveGameSignature, class USSaveGame*, SaveObject);
 
 /* DataTable Row for spawning monsters in game mode */
 USTRUCT(BlueprintType)
@@ -66,18 +62,7 @@ public:
 	void KillAll();
 	
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
-
-	UPROPERTY(BlueprintAssignable)
-	FOnSaveGameSignature OnSaveGameLoaded;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnSaveGameSignature OnSaveGameWritten;
-
-	UFUNCTION(BlueprintCallable, Category = "SaveGame")
-	void WriteSaveGame();
-
-	void LoadSaveGame();
-
+	
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
@@ -111,12 +96,6 @@ protected:
 	float CooldownBotSpawnUntil;
 
 	FMonsterInfoRow* SelectedMonsterRow;
-
-	/* Name of slot to save/load to disk. Can be overridden via InitGame() options string */
-	FString SlotName;
-
-	UPROPERTY()
-	USSaveGame* CurrentSaveGame;
 
 	UFUNCTION()
 	void SpawnBotTimerElapsed();

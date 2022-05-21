@@ -63,7 +63,4 @@ public:
 	/* Checks current record and only sets if better time was passed in. */
 	UFUNCTION(BlueprintCallable)
 	bool UpdatePersonalRecord(float NewTime);
-
-	UFUNCTION(BlueprintCallable)
-	bool OverrideSpawnTransform(USSaveGame* SaveObject);
 };
