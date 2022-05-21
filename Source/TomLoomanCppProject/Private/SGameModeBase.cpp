@@ -19,6 +19,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "TomLoomanCppProject/TomLoomanCppProject.h"
+#include "SSaveGameSettings.h"
 
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -33,7 +34,9 @@ ASGameModeBase::ASGameModeBase()
 
 	PlayerStateClass = ASPlayerState::StaticClass();
 
-	SlotName = "SaveGame01";
+	// get default slot name for slot name from project settings
+	const USSaveGameSettings* SGSettings = GetDefault<USSaveGameSettings>();
+	SlotName = SGSettings->SaveSlotName;
 }
 
 void ASGameModeBase::StartPlay()

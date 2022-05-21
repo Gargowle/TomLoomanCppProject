@@ -13,7 +13,9 @@
 				"AIModule",
 				"UMG",
 				"CoreUObject",
-				"GameplayTags"
+				"GameplayTags",
+				"OnlineSubsystem",
+				"DeveloperSettings"
 			]
 		}
 	],
