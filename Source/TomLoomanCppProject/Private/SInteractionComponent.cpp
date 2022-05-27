@@ -15,6 +15,9 @@ USInteractionComponent::USInteractionComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	// Since Camera info is used in Tick, the most up to date camera position for tracing should be used
+	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
+
 	TraceRadius = 30.0f;
 	TraceDistance = 1000.0f;
 
