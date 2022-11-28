@@ -17,7 +17,7 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->SetCollisionProfileName("PhysicsActor");
 
-	RadialForce = CreateAbstractDefaultSubobject<URadialForceComponent>("RadialForce");
+	RadialForce = CreateDefaultSubobject<URadialForceComponent>("RadialForce");
 	RadialForce->SetupAttachment(RootComponent);
 	RadialForce->ImpulseStrength = 2000;
 	RadialForce->Radius = 600;

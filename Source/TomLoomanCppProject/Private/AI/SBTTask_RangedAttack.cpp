@@ -41,7 +41,7 @@ EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& O
 		FVector Direction = TargetActor->GetActorLocation() - MuzzleLocation;
 		FRotator MuzzleRotation = Direction.Rotation();
 
-		MuzzleRotation.Pitch += FMath::RandRange(-0.0, MaxBulletSpreadFromCenterInDegree); // min value 0 because we do not want to shoot directly at the ground
+		MuzzleRotation.Pitch += FMath::RandRange(-0.0f, MaxBulletSpreadFromCenterInDegree); // min value 0 because we do not want to shoot directly at the ground
 		MuzzleRotation.Yaw += FMath::RandRange(-MaxBulletSpreadFromCenterInDegree, MaxBulletSpreadFromCenterInDegree);
 
 		FActorSpawnParameters SpawnParams;

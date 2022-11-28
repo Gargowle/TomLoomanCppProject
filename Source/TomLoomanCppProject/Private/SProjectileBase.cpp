@@ -72,7 +72,7 @@ void ASProjectileBase::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, 
 
 void ASProjectileBase::Explode_Implementation()
 {
-	if (ensure(!IsPendingKill()))
+	if (ensure(IsValid(this))) // make sure that actor is not pending kill
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 

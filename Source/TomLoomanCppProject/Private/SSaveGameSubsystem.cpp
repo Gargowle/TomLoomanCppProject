@@ -112,7 +112,7 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName)
 			AActor* Actor = *It;
 
 			// only interested in our "gameplay actors", skip actors that are being destroyed
-			if (Actor->IsPendingKill() || !Actor->Implements<USGameplayInterface>())
+			if (!IsValid(Actor) || !Actor->Implements<USGameplayInterface>())
 			{
 				continue;
 			}
@@ -162,7 +162,7 @@ void USSaveGameSubsystem::HandleStartingNewPlayer(AController* NewPlayer)
 
 bool USSaveGameSubsystem::OverrideSpawnTransform(AController* NewPlayer)
 {
-	if (NewPlayer == nullptr || NewPlayer->IsPendingKill())
+	if (NewPlayer == nullptr || !IsValid(NewPlayer))
 	{
 		return false;
 	}
