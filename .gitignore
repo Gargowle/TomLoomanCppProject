@@ -1,6 +1,11 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# Rider or any other JetBrains IDE
+.idea/
+
+Plugins/Developer/RiderLink/
+
 # Compiled Object files
 *.slo
 *.lo
