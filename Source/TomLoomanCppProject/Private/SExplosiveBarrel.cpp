@@ -43,7 +43,7 @@ void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorHit in Explosive Barrel"));
 	
-	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s, at game time %f"), *GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
+	UE_LOG(LogTemp, Log, TEXT("OtherActor: %s, at game time %f"), *GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
 
 	FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
 	DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
