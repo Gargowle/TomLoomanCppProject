@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright Gargowle. All Rights Reserved.
 
 #include "SActionComponent.h"
 #include "SAction.h"
