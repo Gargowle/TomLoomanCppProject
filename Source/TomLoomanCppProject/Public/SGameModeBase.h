@@ -82,7 +82,7 @@ protected:
 
 	/* Time to wait between failed attempts to spawn/by monster to give some time to build up credits */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float CooldownTimeBetweenFailures;
+	float CooldownTimeBetweenSpawnFailures;
 
 	FTimerHandle TimerHandle_SpawnBots;
 

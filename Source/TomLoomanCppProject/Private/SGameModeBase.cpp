@@ -26,7 +26,7 @@ ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
 	CreditsPerKill = 5;
-	CooldownTimeBetweenFailures = 8.0f;
+	CooldownTimeBetweenSpawnFailures = 8.0f;
 	NrOfCoinsToSpawnAtGameStart = 4;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
@@ -133,7 +133,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		if(!SelectedMonsterRow || SelectedMonsterRow->SpawnCost >= AvailableSpawnCredit)
 		{
 			// Too expensive to spawn, try again soon
-			CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
+			CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenSpawnFailures;
 
 			LogOnScreen(this, FString::Printf(TEXT("Spawn cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
 			return;
