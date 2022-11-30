@@ -56,6 +56,6 @@ void USActionEffect_Thorns::ApplyThornDamage(AActor* InstigatorActor, USAttribut
 
 	if(ThornsDamage != 0)
 	{
-		USGameplayFunctionLibrary::ApplyDamage(InstigatorActor, Owner, ThornsDamage);		
+		USGameplayFunctionLibrary::ApplyDamage(Owner, InstigatorActor, ThornsDamage);		
 	}
 }
