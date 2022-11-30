@@ -35,7 +35,7 @@ protected:
 
 	virtual void SetPawn(APawn* InPawn) override;
 
-	// Listen for incoming player state (for clientes this may be nullptr when initially joining a game,
+	// Listen for incoming player state (for clients this may be nullptr when initially joining a game,
 	// afterwards player state will not change again as Player Controllers maintain the same player state throughout the level)
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerStateChanged OnPlayerStateReceived;

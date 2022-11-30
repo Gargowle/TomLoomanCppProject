@@ -41,7 +41,7 @@ public:
 
 protected:
 
-	// mark as UPROPERTY such that it is known to Unreals memory management systemW
+	// mark as UPROPERTY such that it is known to Unreals memory management system
 	// Edit: Since it is now also supposed to work in network context, it is marked as Replicated and therefore would get marked as UPROPERTY either way
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<USAction*> Actions;

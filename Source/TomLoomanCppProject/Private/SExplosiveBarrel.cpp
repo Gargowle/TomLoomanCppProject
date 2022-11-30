@@ -23,7 +23,7 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	RadialForce->Radius = 600;
 	// less physical accurate (ignores mass)
 	RadialForce->bImpulseVelChange = true;
-	// remove small radial force that sually would be applied in component tick
+	// remove small radial force that usually would be applied in component tick
 	RadialForce->SetAutoActivate(false);
 
 }
